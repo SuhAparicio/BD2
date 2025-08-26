@@ -47,7 +47,9 @@
     <a href="{% url 'reservas:reserva_create' %}">Adicionar Reserva</a>
     <ul>
         {% for reserva in reservas %}
-        <li>{{ reserva }} 
+        <li>
+            Livro: {{ reserva.livro }}
+            Utilizador: {{ reserva.utilizador_nome }}
             <a href="{% url 'reservas:reserva_detail' reserva.pk %}">Detalhes</a>
             <a href="{% url 'reservas:reserva_update' reserva.pk %}">Editar</a>
             <a href="{% url 'reservas:reserva_delete' reserva.pk %}">Apagar</a>

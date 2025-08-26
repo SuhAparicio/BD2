@@ -44,7 +44,7 @@
 </head>
 <body>
     <h1>Apagar Utilizador</h1>
-    <p>Tem certeza que quer apagar {{ utilizador }}?</p>
+    <p>Tem a certeza que quer apagar {{ utilizador.nome }} ({{ utilizador.numero_socio }})?</p>
     <form method="post">
         {% csrf_token %}
         <input type="submit" value="Sim, apagar">

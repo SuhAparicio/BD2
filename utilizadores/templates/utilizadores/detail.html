@@ -47,7 +47,9 @@
     <p>Nome: {{ utilizador.nome }}</p>
     <p>Contacto: {{ utilizador.contacto|default:"N/A" }}</p>
     <p>Número de Sócio: {{ utilizador.numero_socio }}</p>
-    <p>Data de Registo: {{ utilizador.data_registo }}</p>
-    <a href="{% url 'utilizadores:utilizador_list' %}">Voltar</a>
+    <p>User ID: {{ utilizador.user_id }}</p>
+    <a href="{% url 'utilizadores:utilizador_list' %}">Voltar à lista</a>
+    <a href="{% url 'utilizadores:utilizador_update' utilizador.id %}">Editar</a>
+    <a href="{% url 'utilizadores:utilizador_delete' utilizador.id %}">Apagar</a>
 </body>
 </html>

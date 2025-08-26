@@ -47,7 +47,9 @@
     <a href="{% url 'emprestimos:emprestimo_create' %}">Adicionar Empréstimo</a>
     <ul>
         {% for emprestimo in emprestimos %}
-        <li>{{ emprestimo }} 
+        <li>
+            Livro: {{ emprestimo.livro }}
+            Utilizador: {{ emprestimo.utilizador_nome }}
             <a href="{% url 'emprestimos:emprestimo_detail' emprestimo.pk %}">Detalhes</a>
             <a href="{% url 'emprestimos:emprestimo_update' emprestimo.pk %}">Editar</a>
             <a href="{% url 'emprestimos:emprestimo_delete' emprestimo.pk %}">Apagar</a>

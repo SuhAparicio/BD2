@@ -45,10 +45,12 @@
 <body>
     <h1>Detalhes da Reserva</h1>
     <p>Livro: {{ reserva.livro }}</p>
-    <p>Utilizador: {{ reserva.utilizador }}</p>
+    <p>Utilizador: {{ utilizador_nome }}</p>
     <p>Data de Reserva: {{ reserva.data_reserva }}</p>
     <p>Data de Retirada: {{ reserva.data_retirada|default:"N/A" }}</p>
     <p>Concluída: {{ reserva.concluida|yesno:"Sim,Não" }}</p>
-    <a href="{% url 'reservas:reserva_list' %}">Voltar</a>
+    <a href="{% url 'reservas:reserva_list' %}">Voltar à lista</a>
+    <a href="{% url 'reservas:reserva_update' reserva.pk %}">Editar</a>
+    <a href="{% url 'reservas:reserva_delete' reserva.pk %}">Apagar</a>
 </body>
 </html>

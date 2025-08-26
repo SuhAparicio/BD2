@@ -2,48 +2,75 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import EmprestimoForm
 from .models import Emprestimo
+from utilizadores.mongo_utils import listar_utilizadores
+from bson.objectid import ObjectId
 
 @login_required
 def emprestimo_list(request):
     emprestimos = Emprestimo.objects.all()
+    utilizadores = listar_utilizadores()
+    utilizadores_dict = {str(u['_id']): u['nome'] for u in utilizadores}
+    for emprestimo in emprestimos:
+        emprestimo.utilizador_nome = utilizadores_dict.get(emprestimo.utilizador_id, 'Desconhecido')
     return render(request, 'emprestimos/list.html', {'emprestimos': emprestimos})
 
 @login_required
 def emprestimo_detail(request, pk):
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
-    return render(request, 'emprestimos/detail.html', {'emprestimo': emprestimo})
+    utilizador_nome = None
+    if emprestimo.utilizador_id:
+        utilizadores = listar_utilizadores()
+        for u in utilizadores:
+            if u['id'] == emprestimo.utilizador_id:
+                utilizador_nome = u['nome']
+                break
+    return render(request, 'emprestimos/detail.html', {'emprestimo': emprestimo, 'utilizador_nome': utilizador_nome})
 
 @login_required
 def emprestimo_create(request):
+    utilizadores = listar_utilizadores()
+    for u in utilizadores:
+        u['id'] = str(u['_id'])           # Adiciona o campo 'id' como string
+    opcoes_utilizador = [(u['id'], u['nome']) for u in utilizadores]  # Usa 'id' no dropdown
     if request.method == 'POST':
         form = EmprestimoForm(request.POST)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
         if form.is_valid():
-            emprestimo = form.save()
-            # Marca o livro como indisponível
+            emprestimo = form.save(commit=False)
+            emprestimo.utilizador_id = form.cleaned_data['utilizador_id']
             emprestimo.livro.disponivel = False
             emprestimo.livro.save()
+            emprestimo.save()
             return redirect('emprestimos:emprestimo_list')
     else:
         form = EmprestimoForm()
+        form.fields['utilizador_id'].choices = opcoes_utilizador
     return render(request, 'emprestimos/create.html', {'form': form})
 
 @login_required
 def emprestimo_update(request, pk):
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
+    utilizadores = listar_utilizadores()
+    for u in utilizadores:
+        u['id'] = str(u['_id'])           # Adiciona o campo 'id' como string
+    opcoes_utilizador = [(u['id'], u['nome']) for u in utilizadores]  # Usa 'id' no dropdown
     if request.method == 'POST':
         form = EmprestimoForm(request.POST, instance=emprestimo)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
         if form.is_valid():
-            form.save()
+            emprestimo = form.save(commit=False)
+            emprestimo.utilizador_id = form.cleaned_data['utilizador_id']
+            emprestimo.save()
             return redirect('emprestimos:emprestimo_list')
     else:
         form = EmprestimoForm(instance=emprestimo)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
     return render(request, 'emprestimos/update.html', {'form': form})
 
 @login_required
 def emprestimo_delete(request, pk):
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
     if request.method == 'POST':
-        # Marca o livro como disponível ao devolver
         if emprestimo.devolvido:
             emprestimo.livro.disponivel = True
             emprestimo.livro.save()

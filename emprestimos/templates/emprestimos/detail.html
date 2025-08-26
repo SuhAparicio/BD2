@@ -45,10 +45,12 @@
 <body>
     <h1>Detalhes do Empréstimo</h1>
     <p>Livro: {{ emprestimo.livro }}</p>
-    <p>Utilizador: {{ emprestimo.utilizador }}</p>
+    <p>Utilizador: {{ utilizador_nome }}</p>
     <p>Data de Empréstimo: {{ emprestimo.data_emprestimo }}</p>
     <p>Data de Devolução: {{ emprestimo.data_devolucao|default:"N/A" }}</p>
     <p>Devolvido: {{ emprestimo.devolvido|yesno:"Sim,Não" }}</p>
-    <a href="{% url 'emprestimos:emprestimo_list' %}">Voltar</a>
+    <a href="{% url 'emprestimos:emprestimo_list' %}">Voltar à lista</a>
+    <a href="{% url 'emprestimos:emprestimo_update' emprestimo.pk %}">Editar</a>
+    <a href="{% url 'emprestimos:emprestimo_delete' emprestimo.pk %}">Apagar</a>
 </body>
 </html>

@@ -47,10 +47,11 @@
     <a href="{% url 'utilizadores:utilizador_create' %}">Adicionar Utilizador</a>
     <ul>
         {% for utilizador in utilizadores %}
-        <li>{{ utilizador }} 
-            <a href="{% url 'utilizadores:utilizador_detail' utilizador.pk %}">Detalhes</a>
-            <a href="{% url 'utilizadores:utilizador_update' utilizador.pk %}">Editar</a>
-            <a href="{% url 'utilizadores:utilizador_delete' utilizador.pk %}">Apagar</a>
+        <li>
+            {{ utilizador.nome }} ({{ utilizador.numero_socio }})
+            <a href="{% url 'utilizadores:utilizador_detail' utilizador.id %}">Detalhes</a>
+            <a href="{% url 'utilizadores:utilizador_update' utilizador.id %}">Editar</a>
+            <a href="{% url 'utilizadores:utilizador_delete' utilizador.id %}">Apagar</a>
         </li>
         {% empty %}
         <li>Nenhum utilizador encontrado.</li>

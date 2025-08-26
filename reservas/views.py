@@ -2,75 +2,83 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import ReservaForm
 from .models import Reserva
+from utilizadores.mongo_utils import listar_utilizadores
+from bson.objectid import ObjectId
 
 @login_required
 def reserva_list(request):
-    try:
-        reservas = Reserva.objects.all()
-        return render(request, 'reservas/list.html', {'reservas': reservas})
-    except Exception as e:
-        print(f"Erro na view reserva_list: {e}")
-        return render(request, 'reservas/list.html', {'error': str(e)})
+    reservas = Reserva.objects.all()
+    utilizadores = listar_utilizadores()
+    # Cria um dicionário para pesquisa rápida pelo id
+    utilizadores_dict = {str(u['_id']): u['nome'] for u in utilizadores}
+    # Adiciona o nome do utilizador a cada reserva
+    for reserva in reservas:
+        reserva.utilizador_nome = utilizadores_dict.get(reserva.utilizador_id, 'Desconhecido')
+    return render(request, 'reservas/list.html', {'reservas': reservas})
 
 @login_required
 def reserva_detail(request, pk):
-    try:
-        reserva = get_object_or_404(Reserva, pk=pk)
-        return render(request, 'reservas/detail.html', {'reserva': reserva})
-    except Exception as e:
-        print(f"Erro na view reserva_detail: {e}")
-        return render(request, 'reservas/detail.html', {'error': str(e)})
+    reserva = get_object_or_404(Reserva, pk=pk)
+    # Buscar nome do utilizador no MongoDB
+    utilizador_nome = None
+    if reserva.utilizador_id:
+        utilizadores = listar_utilizadores()
+        for u in utilizadores:
+            if u['id'] == reserva.utilizador_id:
+                utilizador_nome = u['nome']
+                break
+    return render(request, 'reservas/detail.html', {'reserva': reserva, 'utilizador_nome': utilizador_nome})
 
 @login_required
 def reserva_create(request):
-    try:
-        if request.method == 'POST':
-            form = ReservaForm(request.POST)
-            if form.is_valid():
-                reserva = form.save(commit=False)
-                if reserva.data_retirada:
-                    reserva.livro.disponivel = False
-                    reserva.livro.save()
-                reserva.save()
-                return redirect('reservas:reserva_list')
-        else:
-            form = ReservaForm()
-        return render(request, 'reservas/create.html', {'form': form})
-    except Exception as e:
-        print(f"Erro na view reserva_create: {e}")
-        return render(request, 'reservas/create.html', {'form': form, 'error': str(e)})
+    utilizadores = listar_utilizadores()
+    for u in utilizadores:
+        u['id'] = str(u['_id'])           # Adiciona o campo 'id' como string
+    opcoes_utilizador = [(u['id'], u['nome']) for u in utilizadores]  # Usa 'id' no dropdown
+    if request.method == 'POST':
+        form = ReservaForm(request.POST)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            # Guarda o utilizador_id selecionado
+            reserva.utilizador_id = form.cleaned_data['utilizador_id']
+            if reserva.data_retirada:
+                reserva.livro.disponivel = False
+                reserva.livro.save()
+            reserva.save()
+            return redirect('reservas:reserva_list')
+    else:
+        form = ReservaForm()
+        form.fields['utilizador_id'].choices = opcoes_utilizador
+    return render(request, 'reservas/create.html', {'form': form})
 
 @login_required
 def reserva_update(request, pk):
-    try:
-        reserva = get_object_or_404(Reserva, pk=pk)
-        if request.method == 'POST':
-            form = ReservaForm(request.POST, instance=reserva)
-            if form.is_valid():
-                reserva_anterior = Reserva.objects.get(pk=pk)
-                reserva = form.save()
-                if reserva.data_retirada and not reserva_anterior.data_retirada:
-                    reserva.livro.disponivel = False
-                    reserva.livro.save()
-                return redirect('reservas:reserva_list')
-        else:
-            form = ReservaForm(instance=reserva)
-        return render(request, 'reservas/update.html', {'form': form})
-    except Exception as e:
-        print(f"Erro na view reserva_update: {e}")
-        return render(request, 'reservas/update.html', {'form': form, 'error': str(e)})
+    reserva = get_object_or_404(Reserva, pk=pk)
+    utilizadores = listar_utilizadores()
+    for u in utilizadores:
+        u['id'] = str(u['_id'])           # Adiciona o campo 'id' como string
+    opcoes_utilizador = [(u['id'], u['nome']) for u in utilizadores]  # Usa 'id' no dropdown
+    if request.method == 'POST':
+        form = ReservaForm(request.POST, instance=reserva)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            reserva.utilizador_id = form.cleaned_data['utilizador_id']
+            reserva.save()
+            return redirect('reservas:reserva_list')
+    else:
+        form = ReservaForm(instance=reserva)
+        form.fields['utilizador_id'].choices = opcoes_utilizador
+    return render(request, 'reservas/update.html', {'form': form})
 
 @login_required
 def reserva_delete(request, pk):
-    try:
-        reserva = get_object_or_404(Reserva, pk=pk)
-        if request.method == 'POST':
-            if not reserva.concluida:
-                reserva.livro.disponivel = True
-                reserva.livro.save()
-            reserva.delete()
-            return redirect('reservas:reserva_list')
-        return render(request, 'reservas/delete.html', {'reserva': reserva})
-    except Exception as e:
-        print(f"Erro na view reserva_delete: {e}")
-        return render(request, 'reservas/delete.html', {'reserva': reserva, 'error': str(e)})
+    reserva = get_object_or_404(Reserva, pk=pk)
+    if request.method == 'POST':
+        if not reserva.concluida:
+            reserva.livro.disponivel = True
+            reserva.livro.save()
+        reserva.delete()
+        return redirect('reservas:reserva_list')
+    return render(request, 'reservas/delete.html', {'reserva': reserva})

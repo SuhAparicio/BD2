@@ -1,7 +1,6 @@
 from django import forms
-from .models import UtilizadorBiblioteca
 
-class UtilizadorForm(forms.ModelForm):
-    class Meta:
-        model = UtilizadorBiblioteca
-        fields = ['nome', 'contacto', 'numero_socio']
+class UtilizadorForm(forms.Form):
+    nome = forms.CharField(max_length=100)
+    contacto = forms.CharField(max_length=20, required=False)
+    numero_socio = forms.CharField(max_length=10)

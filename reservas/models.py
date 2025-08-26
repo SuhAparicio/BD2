@@ -1,10 +1,9 @@
 from django.db import models
 from livros.models import Livro
-from utilizadores.models import UtilizadorBiblioteca
 
 class Reserva(models.Model):
     livro = models.ForeignKey(Livro, on_delete=models.CASCADE)
-    utilizador = models.ForeignKey(UtilizadorBiblioteca, on_delete=models.CASCADE)
+    utilizador_id = models.CharField(max_length=24)     # ID do utilizador do MongoDB
     data_reserva = models.DateField(auto_now_add=True)
     data_retirada = models.DateField(null=True, blank=True)
     concluida = models.BooleanField(default=False)
