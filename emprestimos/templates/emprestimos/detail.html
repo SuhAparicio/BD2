@@ -1,56 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Empréstimo</title>
-     <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-        form {
-            max-width: 400px;
-            padding: 15px;
-            background-color: #fff;
+        .loan-card {
+            max-width: 600px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 15px;
         }
-        input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 5px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
+        .loan-name {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
+        .loan-image {
+            display: block;
+            margin: 0 auto 20px auto;
+            width: 150px;
+            height: auto;
         }
-        a {
-            margin-right: 10px;
+        .loan-details {
+            text-align: left;
+            padding: 0 20px;
+        }
+        .loan-details p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .loan-details strong {
+            color: #333;
+        }
+        .loan-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .action-btn {
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        .action-btn:hover {
+            color: #0056b3;
+        }
+        .loan-card a {
+            display: inline-block;
+            padding: 10px 20px;
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #007bff;
+            border-radius: 5px;
         }
-        a:hover {
-            text-decoration: underline;
+        .loan-card a:hover {
+            text-decoration: none;
+            color: #0056b3;
+            border-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Detalhes do Empréstimo</h1>
-    <p>Livro: {{ emprestimo.livro }}</p>
-    <p>Utilizador: {{ utilizador_nome }}</p>
-    <p>Data de Empréstimo: {{ emprestimo.data_emprestimo }}</p>
-    <p>Data de Devolução: {{ emprestimo.data_devolucao|default:"N/A" }}</p>
-    <p>Devolvido: {{ emprestimo.devolvido|yesno:"Sim,Não" }}</p>
-    <a href="{% url 'emprestimos:emprestimo_list' %}">Voltar à lista</a>
-    <a href="{% url 'emprestimos:emprestimo_update' emprestimo.pk %}">Editar</a>
-    <a href="{% url 'emprestimos:emprestimo_delete' emprestimo.pk %}">Apagar</a>
+    {% include "navbar.html" %}
+    <div class="loan-card">
+        <h2 class="loan-name">Detalhes do Empréstimo</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/2554/2554923.png" alt="Empréstimo Image" class="loan-image">
+        <div class="loan-details">
+            <p><strong>Livro:</strong> {{ emprestimo.livro }}</p>
+            <p><strong>Utilizador:</strong> {{ utilizador_nome }}</p>
+            <p><strong>Data de Empréstimo:</strong> {{ emprestimo.data_emprestimo }}</p>
+            <p><strong>Data de Devolução:</strong> {{ emprestimo.data_devolucao|default:"N/A" }}</p>
+            <p><strong>Devolvido:</strong> {{ emprestimo.devolvido|yesno:"Sim,Não" }}</p>
+        </div>
+        <div class="loan-actions">
+            <a href="{% url 'emprestimos:emprestimo_list' %}" class="action-btn" title="Voltar à lista"><i class="fas fa-arrow-left"></i></a>
+            <a href="{% url 'emprestimos:emprestimo_update' emprestimo.pk %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+            <a href="{% url 'emprestimos:emprestimo_delete' emprestimo.pk %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+        </div>
+    </div>
 </body>
 </html>

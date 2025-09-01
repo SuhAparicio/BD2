@@ -19,12 +19,12 @@ def reserva_list(request):
 @login_required
 def reserva_detail(request, pk):
     reserva = get_object_or_404(Reserva, pk=pk)
-    # Buscar nome do utilizador no MongoDB
     utilizador_nome = None
     if reserva.utilizador_id:
         utilizadores = listar_utilizadores()
         for u in utilizadores:
-            if u['id'] == reserva.utilizador_id:
+            u_id = str(u['_id'])  # Converte o ObjectId para string
+            if u_id == reserva.utilizador_id:
                 utilizador_nome = u['nome']
                 break
     return render(request, 'reservas/detail.html', {'reserva': reserva, 'utilizador_nome': utilizador_nome})

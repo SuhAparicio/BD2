@@ -84,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Projeto',  # Nome da BD criada no HeidiSQL
         'USER': 'postgres',
-        'PASSWORD': 'SuhAparicio25!',  # Substitui pela tua senha
+        'PASSWORD': '1234567',  # Substitui pela tua senha
         'HOST': 'localhost',
         'PORT': '5432',
     }

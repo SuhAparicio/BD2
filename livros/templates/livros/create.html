@@ -1,54 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Livro</title>
-     <style>
+    <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
         }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-        form {
-            max-width: 400px;
-            padding: 15px;
-            background-color: #fff;
+        .book-card {
+            max-width: 600px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        input[type="submit"] {
+        .book-name {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .book-image {
+            display: block;
+            margin: 0 auto 20px auto;
+            width: 150px;
+            height: auto;
+            border-radius: 10px;
+        }
+        .book-form {
+            text-align: left;
+            padding: 0 20px;
+        }
+        .book-form p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .book-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .book-form input[type="text"],
+        .book-form input[type="date"],
+        .book-form select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .book-form input[type="submit"] {
             background-color: #007bff;
             color: #fff;
-            padding: 5px 15px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        input[type="submit"]:hover {
+        .book-form input[type="submit"]:hover {
             background-color: #0056b3;
         }
-        a {
-            margin-right: 10px;
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .book-card a {
+            display: inline-block;
+            padding: 10px 20px;
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #007bff;
+            border-radius: 5px;
         }
-        a:hover {
-            text-decoration: underline;
+        .book-card a:hover {
+            text-decoration: none;
+            color: #0056b3;
+            border-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Adicionar Livro</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Adicionar">
-    </form>
-    <a href="{% url 'livros:livro_list' %}">Cancelar</a>
+    {% include "navbar.html" %}
+    <div class="book-card">
+        <h2 class="book-name">Adicionar Livro</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/29/29302.png" alt="Book Image" class="book-image">
+        <form method="post" class="book-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="button-container">
+                <a href="{% url 'livros:livro_list' %}">Cancelar</a>
+                <input type="submit" value="Adicionar">
+            </div>
+        </form>
+    </div>
 </body>
 </html>

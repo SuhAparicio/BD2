@@ -1,51 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Autor</title>
-     <style>
+    <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
         }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-        form {
-            max-width: 400px;
-            padding: 15px;
-            background-color: #fff;
+        .author-card {
+            max-width: 600px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 5px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
+        .author-name {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
+        .author-image {
+            display: block;
+            margin: 0 auto 20px auto;
+            width: 150px;
+            height: auto;
+            border-radius: 50%;
         }
-        a {
-            margin-right: 10px;
+        .author-details {
+            text-align: left;
+            padding: 0 20px;
+        }
+        .author-details p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .author-card a {
+            display: inline-block;
+            margin-top: 20px;
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
         }
-        a:hover {
+        .author-card a:hover {
             text-decoration: underline;
+            color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Detalhes do Autor</h1>
-    <p>Nome: {{ autor.nome }}</p>
-    <p>Data de Nascimento: {{ autor.data_nascimento|default:"N/A" }}</p>
-    <a href="{% url 'autores:autor_list' %}">Voltar</a>
+    {% include "navbar.html" %}
+    <div class="author-card">
+        <h2 class="author-name">{{ autor.nome }}</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/9131/9131478.png" alt="Author Image" class="author-image">
+        <div class="author-details">
+            <p><strong>Data de Nascimento:</strong> {{ autor.data_nascimento|default:"N/A" }}</p>
+        </div>
+        <a href="{% url 'autores:autor_list' %}">Voltar</a>
+    </div>
 </body>
 </html>

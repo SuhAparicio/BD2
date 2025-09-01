@@ -1,50 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes da Categoria</title>
-     <style>
+    <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
         }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-        form {
-            max-width: 400px;
-            padding: 15px;
-            background-color: #fff;
+        .category-card {
+            margin-top:15px;
+            max-width: 600px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 5px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
+        .category-name {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
+        .category-image {
+            display: block;
+            margin: 0 auto 20px auto;
+            width: 150px;
+            height: auto;
         }
-        a {
-            margin-right: 10px;
+        .category-details {
+            text-align: left;
+            padding: 0 20px;
+        }
+        .category-details p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .category-card a {
+            display: inline-block;
+            margin-top: 20px;
             color: #007bff;
             text-decoration: none;
+            font-weight: bold;
         }
-        a:hover {
+        .category-card a:hover {
             text-decoration: underline;
+            color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Detalhes da Categoria</h1>
-    <p>Nome: {{ categoria.nome }}</p>
-    <a href="{% url 'categorias:categoria_list' %}">Voltar</a>
+    {% include "navbar.html" %}
+    <div class="category-card">
+        <h2 class="category-name">{{ categoria.nome }}</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Categoria Image" class="category-image">
+        <div class="category-details">
+        </div>
+        <a href="{% url 'categorias:categoria_list' %}">Voltar</a>
+    </div>
 </body>
 </html>

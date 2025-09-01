@@ -21,7 +21,8 @@ def emprestimo_detail(request, pk):
     if emprestimo.utilizador_id:
         utilizadores = listar_utilizadores()
         for u in utilizadores:
-            if u['id'] == emprestimo.utilizador_id:
+            u_id = str(u['_id'])  # Converte o ObjectId para string
+            if u_id == emprestimo.utilizador_id:
                 utilizador_nome = u['nome']
                 break
     return render(request, 'emprestimos/detail.html', {'emprestimo': emprestimo, 'utilizador_nome': utilizador_nome})

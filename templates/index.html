@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca - Página Inicial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .main-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 1000px;
+            width: 90%;
+        }
+
+        .main-card h1 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 25px;
+            justify-items: center;
+        }
+
+        .menu-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background 0.2s;
+            text-decoration: none;
+            color: #333;
+            width: 140px;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            background: #eef5ff;
+        }
+
+        .menu-item img {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 10px;
+        }
+
+        .menu-item p {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+{% include "navbar.html" %}
+<div class="main-card">
+    <h1>Bem-vindo à Biblioteca 📚</h1>
+    <div class="menu-grid">
+        <a href="/admin/" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin">
+            <p>Admin</p>
+        </a>
+        <a href="{% url 'autores:autor_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/1995/1995562.png" alt="Autores">
+            <p>Autores</p>
+        </a>
+        <a href="{% url 'categorias:categoria_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Categorias">
+            <p>Categorias</p>
+        </a>
+        <a href="{% url 'livros:livro_list' %}" class="menu-item">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Book_icon_%28closed%29_-_Blue_and_gold.svg/1170px-Book_icon_%28closed%29_-_Blue_and_gold.svg.png" alt="Livros">
+            <p>Livros</p>
+        </a>
+        <a href="{% url 'emprestimos:emprestimo_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/2554/2554923.png" alt="Emprestimos">
+            <p>Empréstimos</p>
+        </a>
+        <a href="{% url 'utilizadores:utilizador_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/256/5805/5805640.png" alt="Utilizadores">
+            <p>Utilizadores</p>
+        </a>
+        <a href="{% url 'reservas:reserva_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135712.png" alt="Reservas">
+            <p>Reservas</p>
+        </a>
+    </div>
+</div>
+</body>
+</html>

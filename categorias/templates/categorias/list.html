@@ -1,60 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Categorias</title>
-     <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
         }
+
         h1 {
             color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
+            text-align: center;
         }
-        form {
-            max-width: 400px;
-            padding: 15px;
-            background-color: #fff;
-            border: 1px solid #ddd;
+
+        .add-category {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
             border-radius: 5px;
+            width: 200px;
+            font-weight: bold;
+            transition: background-color 0.2s;
         }
-        input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 5px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
+
+        .add-category:hover {
             background-color: #0056b3;
         }
-        a {
-            margin-right: 10px;
-            color: #007bff;
-            text-decoration: none;
+
+        .category-list-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
-        a:hover {
-            text-decoration: underline;
+
+        .category-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            padding: 0;
+            margin: 0 auto;
+        }
+
+        .category-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .category-card:hover {
+            transform: scale(1.02);
+        }
+
+        .category-avatar {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .category-name {
+            margin: 10px 0;
+            color: #444;
+            font-size: 18px;
+        }
+
+        .category-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-btn {
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #0056b3;
+        }
+
+        .item-list {
+            text-align: center;
+            color: #666;
         }
     </style>
 </head>
 <body>
+    {% include "navbar.html" %}
     <h1>Lista de Categorias</h1>
-    <a href="{% url 'categorias:categoria_create' %}">Adicionar Categoria</a>
-    <ul>
-        {% for categoria in categorias %}
-        <li>{{ categoria.nome }}
-            <a href="{% url 'categorias:categoria_detail' categoria.pk %}">Detalhes</a>
-            <a href="{% url 'categorias:categoria_update' categoria.pk %}">Editar</a>
-            <a href="{% url 'categorias:categoria_delete' categoria.pk %}">Apagar</a>
-        </li>
-        {% empty %}
-        <li>Nenhuma categoria encontrada.</li>
-        {% endfor %}
-    </ul>
+    <a href="{% url 'categorias:categoria_create' %}" class="add-category">Adicionar Categoria</a>
+    <div class="category-list-container">
+        <ul class="category-list">
+            {% for categoria in categorias %}
+            <li class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Categoria Image" class="category-avatar">
+                <h2 class="category-name">{{ categoria.nome }}</h2>
+                <div class="category-actions">
+                    <a href="{% url 'categorias:categoria_detail' categoria.pk %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
+                    <a href="{% url 'categorias:categoria_update' categoria.pk %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'categorias:categoria_delete' categoria.pk %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                </div>
+            </li>
+            {% empty %}
+            <li class="item-list">Nenhuma categoria encontrada.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>

@@ -7,3 +7,6 @@ class ReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
         fields = ['livro', 'utilizador_id', 'data_retirada']
+        widgets = {
+            'data_retirada': forms.DateInput(attrs={'type': 'date'}),
+        }
