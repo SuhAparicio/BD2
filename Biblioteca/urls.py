@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import signup
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('emprestimos/', include('emprestimos.urls')),
     path('utilizadores/', include('utilizadores.urls')),
     path('reservas/', include('reservas.urls')),
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('signup/', signup, name='signup'),
 ]

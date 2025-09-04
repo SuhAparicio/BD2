@@ -1,20 +1,34 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from .forms import LivroForm
 from .models import Livro
 
+def is_bibliotecario_ou_admin(user):
+    return (
+        user.is_superuser or
+        user.groups.filter(name='bibliotecario').exists() or
+        user.groups.filter(name='admin').exists()
+    )
+
 @login_required
 def livro_list(request):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     livros = Livro.objects.all()
     return render(request, 'livros/list.html', {'livros': livros})
 
 @login_required
 def livro_detail(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     livro = get_object_or_404(Livro, pk=pk)
     return render(request, 'livros/detail.html', {'livro': livro})
 
 @login_required
 def livro_create(request):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     if request.method == 'POST':
         form = LivroForm(request.POST)
         if form.is_valid():
@@ -26,6 +40,8 @@ def livro_create(request):
 
 @login_required
 def livro_update(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     livro = get_object_or_404(Livro, pk=pk)
     if request.method == 'POST':
         form = LivroForm(request.POST, instance=livro)
@@ -38,6 +54,8 @@ def livro_update(request, pk):
 
 @login_required
 def livro_delete(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     livro = get_object_or_404(Livro, pk=pk)
     if request.method == 'POST':
         livro.delete()

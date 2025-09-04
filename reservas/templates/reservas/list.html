@@ -116,7 +116,7 @@
             {% for reserva in reservas %}
             <li class="reserva-card">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135712.png" alt="Reserva Image" class="reserva-image">
-                <h2 class="reserva-title">{{ reserva.livro }}</h2>
+                <h2 class="reserva-title">{{ reserva.livro.titulo }} por {{ reserva.livro.autor }}</h2>
                 <p class="reserva-info">Utilizador: {{ reserva.utilizador_nome }}</p>
                 <div class="reserva-actions">
                     <a href="{% url 'reservas:reserva_detail' reserva.pk %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>

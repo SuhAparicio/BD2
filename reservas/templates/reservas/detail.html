@@ -86,7 +86,9 @@
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135712.png" alt="Reserva Image" class="user-image">
         <div class="user-details">
             <p><strong>Livro:</strong> {{ reserva.livro }}</p>
-            <p><strong>Utilizador:</strong> {{ reserva.utilizador_nome }}</p>
+            {% if not is_membro %}
+                <p><strong>Utilizador:</strong> {{ utilizador_nome }}</p>
+            {% endif %}
             <p><strong>Data de Reserva:</strong> {{ reserva.data_reserva }}</p>
             <p><strong>Data de Retirada:</strong> {{ reserva.data_retirada|default:"N/A" }}</p>
             <p><strong>Concluída:</strong> {{ reserva.concluida|yesno:"Sim,Não" }}</p>

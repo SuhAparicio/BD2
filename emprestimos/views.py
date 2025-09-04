@@ -1,12 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from .forms import EmprestimoForm
 from .models import Emprestimo
 from utilizadores.mongo_utils import listar_utilizadores
 from bson.objectid import ObjectId
 
+def is_bibliotecario_ou_admin(user):
+    return (
+        user.is_superuser or
+        user.groups.filter(name='bibliotecario').exists() or
+        user.groups.filter(name='admin').exists()
+    )
+
 @login_required
 def emprestimo_list(request):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     emprestimos = Emprestimo.objects.all()
     utilizadores = listar_utilizadores()
     utilizadores_dict = {str(u['_id']): u['nome'] for u in utilizadores}
@@ -16,6 +26,8 @@ def emprestimo_list(request):
 
 @login_required
 def emprestimo_detail(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
     utilizador_nome = None
     if emprestimo.utilizador_id:
@@ -29,6 +41,8 @@ def emprestimo_detail(request, pk):
 
 @login_required
 def emprestimo_create(request):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     utilizadores = listar_utilizadores()
     for u in utilizadores:
         u['id'] = str(u['_id'])           # Adiciona o campo 'id' como string
@@ -50,6 +64,8 @@ def emprestimo_create(request):
 
 @login_required
 def emprestimo_update(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
     utilizadores = listar_utilizadores()
     for u in utilizadores:
@@ -70,6 +86,8 @@ def emprestimo_update(request, pk):
 
 @login_required
 def emprestimo_delete(request, pk):
+    if not is_bibliotecario_ou_admin(request.user):
+        return render(request, '404.html', status=404)
     emprestimo = get_object_or_404(Emprestimo, pk=pk)
     if request.method == 'POST':
         if emprestimo.devolvido:

@@ -85,7 +85,11 @@
         <h2 class="user-name">Apagar Reserva</h2>
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135712.png" alt="Reserva Image" class="user-image">
         <div class="user-message">
-            <p>Tem a certeza que quer apagar a reserva do livro {{ reserva.livro }} para {{ reserva.utilizador_nome }}?</p>
+            {% if is_membro %}
+                <p>Tem a certeza que quer apagar a reserva do livro <strong>{{ reserva.livro.titulo }}</strong> por <strong>{{ reserva.livro.autor }}</strong>?</p>
+            {% else %}
+                <p>Tem a certeza que quer apagar a reserva do livro <strong>{{ reserva.livro.titulo }}</strong> por <strong>{{ reserva.livro.autor }}</strong> para o utilizador <strong>{{ utilizador_nome }}</strong>?</p>
+            {% endif %}
         </div>
         <form method="post" class="user-form">
             {% csrf_token %}

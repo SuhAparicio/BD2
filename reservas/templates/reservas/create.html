@@ -72,7 +72,7 @@
         .button-container {
             display: flex;
             justify-content: flex-end;
-            margin-top: 20px;
+            margin-top: 16px;
             gap: 10px;
         }
         .user-card a {
@@ -89,6 +89,10 @@
             color: #0056b3;
             border-color: #0056b3;
         }
+        form.user-form > * {
+            margin-bottom: 12px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -98,7 +102,12 @@
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135712.png" alt="Reserva Icon" class="user-image">
         <form method="post" class="user-form">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.livro.label_tag }} {{ form.livro }}<br>
+            {% if not is_membro %}
+                {{ form.utilizador_id.label_tag }} {{ form.utilizador_id }}<br>
+            {% endif %}
+            {{ form.data_retirada.label_tag }} {{ form.data_retirada }}<br>
+            {{ form.data_devolucao.label_tag }} {{ form.data_devolucao }}<br>
             <div class="button-container">
                 <a href="{% url 'reservas:reserva_list' %}">Cancelar</a>
                 <input type="submit" value="Adicionar">

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-h_o$jnb^@!k(fsg#k$2ne+j!n+iuha15qdyq#3*k_+stwarofn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -84,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Projeto',  # Nome da BD criada no HeidiSQL
         'USER': 'postgres',
-        'PASSWORD': '1234567',  # Substitui pela tua senha
+        'PASSWORD': 'SuhAparicio25!',  # Substitui pela tua senha
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -130,3 +130,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = '/login/'
+
+LOGOUT_REDIRECT_URL = '/login/'
+
+LOGIN_REDIRECT_URL = '/'
