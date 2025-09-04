@@ -110,7 +110,9 @@
 <body>
     {% include "navbar.html" %}
     <h1>Lista de Livros</h1>
-    <a href="{% url 'livros:livro_create' %}" class="add-book">Adicionar Livro</a>
+    {% if user.is_authenticated and not is_membro %}
+        <a href="{% url 'livros:livro_create' %}" class="add-book">Adicionar Livro</a>
+    {% endif %}
     <div class="book-list-container">
         <ul class="book-list">
             {% for livro in livros %}
@@ -120,8 +122,10 @@
                 <p class="book-author">Autor: {{ livro.autor }}</p>
                 <div class="book-actions">
                     <a href="{% url 'livros:livro_detail' livro.pk %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
-                    <a href="{% url 'livros:livro_update' livro.pk %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
-                    <a href="{% url 'livros:livro_delete' livro.pk %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                    {% if user.is_authenticated and not is_membro %}
+                        <a href="{% url 'livros:livro_update' livro.pk %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'livros:livro_delete' livro.pk %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                    {% endif %}
                 </div>
             </li>
             {% empty %}

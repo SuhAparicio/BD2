@@ -13,15 +13,12 @@ def is_bibliotecario_ou_admin(user):
 
 @login_required
 def livro_list(request):
-    if not is_bibliotecario_ou_admin(request.user):
-        return render(request, '404.html', status=404)
     livros = Livro.objects.all()
-    return render(request, 'livros/list.html', {'livros': livros})
+    is_membro = request.user.groups.filter(name='membro').exists()
+    return render(request, 'livros/list.html', {'livros': livros, 'is_membro': is_membro})
 
 @login_required
 def livro_detail(request, pk):
-    if not is_bibliotecario_ou_admin(request.user):
-        return render(request, '404.html', status=404)
     livro = get_object_or_404(Livro, pk=pk)
     return render(request, 'livros/detail.html', {'livro': livro})
 

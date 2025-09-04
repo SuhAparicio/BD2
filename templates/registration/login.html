@@ -146,12 +146,30 @@
                     <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
                     {{ form.username }}
                     <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-                    {{ form.password }}
+                    <div style="position: relative;">
+                        {{ form.password }}
+                        <span onclick="togglePassword()" style="position: absolute; right: 10px; top: 8px; cursor: pointer;">
+                            <img id="eye-icon" src="https://cdn-icons-png.flaticon.com/512/159/159604.png" alt="Mostrar" width="20" />
+                        </span>
+                    </div>
                     <button type="submit">Entrar</button>
                 </form>
                 <p><a href="{% url 'signup' %}" class="signup-link">Ainda não tem conta? Registar</a></p>
             {% endif %}
         </div>
     </div>
+    <script>
+        function togglePassword() {
+            var input = document.getElementById("id_password");
+            var icon = document.getElementById("eye-icon");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.src = "https://cdn-icons-png.flaticon.com/512/709/709612.png";
+            } else {
+                input.type = "password";
+                icon.src = "https://cdn-icons-png.flaticon.com/512/159/159604.png";
+            }
+        }
+    </script>
 </body>
 </html>
