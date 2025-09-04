@@ -1,25 +1,27 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from datetime import date
 from livros.models import Livro, Autor, Categoria
 from emprestimos.models import Emprestimo
 from emprestimos.forms import EmprestimoForm
 from unittest.mock import patch
 
+# Função utilitária para criar utilizador com permissões
+def criar_utilizador_com_permissao():
+    user = User.objects.create_user(username='teste', password='12345')
+    grupo_admin, _ = Group.objects.get_or_create(name='admin')
+    user.groups.add(grupo_admin)
+    return user
+
 # ================================
 # Testes de Modelos de Empréstimos
 # ================================
 class EmprestimoModelTest(TestCase):
     def setUp(self):
-        # Criar utilizador Django
-        self.utilizador = User.objects.create_user(username='teste', password='12345')
-
-        # Criar autor e categoria
+        self.utilizador = criar_utilizador_com_permissao()
         self.autor = Autor.objects.create(nome="Autor Teste")
         self.categoria = Categoria.objects.create(nome="Categoria Teste")
-
-        # Criar livro
         self.livro = Livro.objects.create(
             titulo="Livro Teste",
             autor=self.autor,
@@ -28,8 +30,6 @@ class EmprestimoModelTest(TestCase):
             data_publicacao=date.today(),
             disponivel=True
         )
-
-        # Criar empréstimo (simulando MongoDB ID como string)
         self.emprestimo = Emprestimo.objects.create(
             livro=self.livro,
             utilizador_id='12345',
@@ -50,8 +50,7 @@ class EmprestimoModelTest(TestCase):
 # =========================
 class EmprestimoFormTest(TestCase):
     def setUp(self):
-        self.utilizador = User.objects.create_user(username='teste', password='12345')
-
+        self.utilizador = criar_utilizador_com_permissao()
         self.autor = Autor.objects.create(nome="Autor Form Teste")
         self.categoria = Categoria.objects.create(nome="Categoria Form Teste")
         self.livro = Livro.objects.create(
@@ -89,7 +88,7 @@ class EmprestimoFormTest(TestCase):
 class EmprestimoViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.utilizador = User.objects.create_user(username='teste', password='12345')
+        self.utilizador = criar_utilizador_com_permissao()
         self.client.login(username='teste', password='12345')
 
         self.autor = Autor.objects.create(nome="Autor View Teste")
@@ -103,7 +102,6 @@ class EmprestimoViewsTest(TestCase):
             disponivel=True
         )
 
-        # Empréstimo simulado com MongoDB ID como string
         self.emprestimo = Emprestimo.objects.create(
             livro=self.livro,
             utilizador_id='12345',

@@ -1,10 +1,20 @@
 from datetime import date
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from livros.models import Livro, Autor, Categoria
 from livros.forms import LivroForm
 
+# Função utilitária para criar utilizador com permissões
+def criar_utilizador_com_permissao():
+    user = User.objects.create_user(username='teste', password='12345')
+    grupo_admin, _ = Group.objects.get_or_create(name='admin')
+    user.groups.add(grupo_admin)
+    return user
+
+# ================================
+# Testes de Modelos
+# ================================
 class LivroModelTest(TestCase):
     def setUp(self):
         self.autor = Autor.objects.create(nome="Autor Teste")
@@ -19,9 +29,11 @@ class LivroModelTest(TestCase):
         )
 
     def test_livro_str_method(self):
-        # Ajusta o teste para refletir a implementação atual do __str__
         self.assertEqual(str(self.livro), "Livro Teste por Autor Teste")
 
+# ================================
+# Testes de Formulários
+# ================================
 class LivroFormTest(TestCase):
     def setUp(self):
         self.autor = Autor.objects.create(nome="Autor Teste")
@@ -44,10 +56,14 @@ class LivroFormTest(TestCase):
         form = LivroForm(data=form_data)
         self.assertFalse(form.is_valid())
 
+# ================================
+# Testes de Views
+# ================================
 class LivroViewsTest(TestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='teste', password='12345')
-        self.client.force_login(self.usuario)
+        self.client = Client()
+        self.utilizador = criar_utilizador_com_permissao()
+        self.client.login(username='teste', password='12345')
 
         self.autor = Autor.objects.create(nome="Autor Teste")
         self.categoria = Categoria.objects.create(nome="Categoria Teste")
@@ -82,7 +98,7 @@ class LivroViewsTest(TestCase):
                 "disponivel": True
             }
         )
-        self.assertEqual(response.status_code, 302)  # redireciona após criação
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(Livro.objects.filter(titulo="Novo Livro").exists())
 
     def test_livro_update_view(self):

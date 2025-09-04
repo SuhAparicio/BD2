@@ -1,16 +1,24 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Autor
 from .forms import AutorForm
+
+
+def criar_utilizador_com_permissao():
+    """Cria um utilizador com permissões de admin (grupo) para os testes."""
+    user = User.objects.create_user(username='testuser', password='testpass')
+    grupo_admin, _ = Group.objects.get_or_create(name='admin')
+    user.groups.add(grupo_admin)
+    return user
 
 
 class AutorModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.client = Client()
-        self.autor = Autor.objects.create(nome="Autor Teste")
-        self.client.login(username='admin', password='admin')
+        self.autor = Autor.objects.create(nome="Autor Inicial")
+        self.client.login(username='testuser', password='testpass')
 
     def test_autor_creation(self):
         """Verifica se o autor é criado corretamente."""
@@ -49,8 +57,8 @@ class AutorFormTest(TestCase):
 
 class AutorViewsTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpass')
         self.client = Client()
+        self.user = criar_utilizador_com_permissao()
         self.autor = Autor.objects.create(nome="Autor Teste")
 
     def test_redirect_if_not_logged_in(self):

@@ -1,8 +1,16 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Categoria
 from .forms import CategoriaForm
+
+
+def criar_utilizador_com_permissao():
+    """Cria um utilizador com permissões de admin (grupo) para os testes."""
+    user = User.objects.create_user(username='testuser', password='testpass')
+    grupo_admin, _ = Group.objects.get_or_create(name='admin')
+    user.groups.add(grupo_admin)
+    return user
 
 
 class CategoriaModelTest(TestCase):
@@ -46,14 +54,14 @@ class CategoriaFormTest(TestCase):
 
 class CategoriaViewsTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpass')
         self.client = Client()
+        self.user = criar_utilizador_com_permissao()
         self.categoria = Categoria.objects.create(nome="Categoria Teste")
 
     def test_redirect_if_not_logged_in(self):
         """Verifica se utilizador não autenticado é redirecionado para login."""
         response = self.client.get(reverse('categorias:categoria_list'))
-        self.assertRedirects(response, '/accounts/login/?next=' + reverse('categorias:categoria_list'))
+        self.assertRedirects(response, '/login/?next=' + reverse('categorias:categoria_list'))
 
     def test_categoria_list_view_logged_in(self):
         """Testa listagem de categorias com login efetuado."""
