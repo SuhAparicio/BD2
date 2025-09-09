@@ -8,6 +8,7 @@
                 {% if group.name == 'admin' or group.name == 'bibliotecario' %}
                     <a href="{% url 'autores:autor_list' %}" {% if request.path|slice:":9" == "/autores/" %}class="active"{% endif %}>Autores</a>
                     <a href="{% url 'categorias:categoria_list' %}" {% if request.path|slice:":12" == "/categorias/" %}class="active"{% endif %}>Categorias</a>
+                    <a href="{% url 'editoras:editora_list' %}" {% if request.path|slice:":10" == "/editoras/" %}class="active"{% endif %}>Editoras</a>
                     <a href="{% url 'emprestimos:emprestimo_list' %}" {% if request.path|slice:":13" == "/emprestimos/" %}class="active"{% endif %}>Empréstimos</a>
                 {% endif %}
             {% endfor %}

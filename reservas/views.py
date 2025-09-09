@@ -1,7 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import ReservaForm
-from .models import Reserva
 from utilizadores.mongo_utils import listar_utilizadores, obter_utilizador_por_id, get_user_by_django_id
 from bson.objectid import ObjectId
 

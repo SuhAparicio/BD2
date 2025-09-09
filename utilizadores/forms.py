@@ -9,12 +9,17 @@ class UtilizadorCreateForm(forms.Form):
     password = forms.CharField(max_length=128, widget=forms.PasswordInput, required=True)
     role = forms.ChoiceField(choices=[('admin', 'Admin'), ('bibliotecario', 'Bibliotecario'), ('membro', 'Membro')])
 
+    def __init__(self, *args, **kwargs):
+        self.user_instance = kwargs.pop('user_instance', None)
+        super().__init__(*args, **kwargs)
+
     def clean_username(self):
         username = self.cleaned_data['username']
         if self.user_instance and username != self.user_instance.username:
             if User.objects.filter(username=username).exists():
                 raise forms.ValidationError("Já existe um utilizador com esse username.")
         return username
+    # ...restante código...
 
     def clean_password(self):
         password = self.cleaned_data.get('password')

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes da Categoria</title>
+    <title>Detalhes da Editora</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,12 +60,12 @@
 <body>
     {% include "navbar.html" %}
     <div class="category-card">
-        <h2 class="category-name">{{ categoria.1 }}</h2>
-        <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Categoria Image" class="category-image">
+        <h2 class="category-name">{{ editora.1 }}</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/602/602182.png" alt="Editora Image" class="category-image">
         <div class="category-details">
-            <p><strong>Descrição:</strong> {{ categoria.2 }}</p>
+            <p><strong>Localização:</strong> {{ editora.2 }}</p>
         </div>
-        <a href="{% url 'categorias:categoria_list' %}">Voltar</a>
+        <a href="{% url 'editoras:editora_list' %}">Voltar</a>
     </div>
 </body>
 </html>

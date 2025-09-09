@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Categorias</title>
+    <title>Lista de Editoras</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -103,22 +103,22 @@
 </head>
 <body>
     {% include "navbar.html" %}
-    <h1>Lista de Categorias</h1>
-    <a href="{% url 'categorias:categoria_create' %}" class="add-category">Adicionar Categoria</a>
+    <h1>Lista de Editoras</h1>
+    <a href="{% url 'editoras:editora_create' %}" class="add-category">Adicionar Editora</a>
     <div class="category-list-container">
         <ul class="category-list">
-            {% for cat in categorias %}
+            {% for edit in editoras %}
             <li class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Categoria Image" class="category-avatar">
-                <h2 class="category-name">{{ cat.1 }}</h2>
+                <img src="https://cdn-icons-png.flaticon.com/512/602/602182.png" alt="Editora Image" class="category-avatar">
+                <h2 class="category-name">{{ edit.1 }}</h2>
                 <div class="category-actions">
-                    <a href="{% url 'categorias:categoria_detail' cat.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
-                    <a href="{% url 'categorias:categoria_update' cat.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
-                    <a href="{% url 'categorias:categoria_delete' cat.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                    <a href="{% url 'editoras:editora_detail' edit.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
+                    <a href="{% url 'editoras:editora_update' edit.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'editoras:editora_delete' edit.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
                 </div>
             </li>
             {% empty %}
-            <li class="item-list">Nenhuma categoria encontrada.</li>
+            <li class="item-list">Nenhuma editora encontrada.</li>
             {% endfor %}
         </ul>
     </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Categoria</title>
+    <title>Apagar Editora</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,42 +29,35 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-        .category-form {
+        .category-image {
+            display: block;
+            margin: 0 auto 20px auto;
+            width: 150px;
+            height: auto;
+        }
+        .category-message {
             text-align: left;
             padding: 0 20px;
-        }
-        .category-form p {
-            margin: 10px 0;
             color: #555;
-        }
-        .category-form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .category-form input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .category-form input[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .category-form input[type="submit"]:hover {
-            background-color: #0056b3;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         .button-container {
             display: flex;
             justify-content: flex-end;
             margin-top: 20px;
             gap: 10px;
+        }
+        .category-card input[type="submit"] {
+            background-color: #dc3545;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .category-card input[type="submit"]:hover {
+            background-color: #c82333;
         }
         .category-card a {
             display: inline-block;
@@ -85,16 +78,16 @@
 <body>
     {% include "navbar.html" %}
     <div class="category-card">
-        <h2 class="category-name">Adicionar Categoria</h2>
+        <h2 class="category-name">Apagar Editora</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/602/602182.png" alt="Editora Image" class="category-image">
+        <div class="category-message">
+            <p>Tem certeza que quer apagar {{ editora }}?</p>
+        </div>
         <form method="post" class="category-form">
             {% csrf_token %}
-            <label>Nome:</label>
-            <input type="text" name="nome" required><br>
-            <label>Descrição:</label>
-            <textarea name="descricao"></textarea><br>
             <div class="button-container">
-                <a href="{% url 'categorias:categoria_list' %}">Cancelar</a>
-                <input type="submit" value="Adicionar">
+                <a href="{% url 'editoras:editora_list' %}">Cancelar</a>
+                <input type="submit" value="Sim, apagar">
             </div>
         </form>
     </div>

@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'livros',
     'emprestimos',
     'utilizadores',
-    'reservas'
+    'reservas',
+    'editoras',
 ]
 
 MIDDLEWARE = [

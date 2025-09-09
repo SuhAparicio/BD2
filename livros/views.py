@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
-from .forms import LivroForm
-from .models import Livro
 
 def is_bibliotecario_ou_admin(user):
     return (
