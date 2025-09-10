@@ -25,21 +25,22 @@ CREATE TABLE Livros (
     id_livro SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     isbn VARCHAR(13) UNIQUE NOT NULL,
+    stock INTEGER,
     ano_publicacao INTEGER,
     id_categoria INTEGER REFERENCES Categorias(id_categoria) ON DELETE SET NULL,
     id_autor INTEGER REFERENCES Autores(id_autor) ON DELETE SET NULL,
     id_editora INTEGER REFERENCES Editoras(id_editora) ON DELETE SET NULL
 );
 
--- Tabela Empréstimos: Regista empréstimos, referenciando Livros e Utilizadores (ID como string do Mongo).
-CREATE TABLE Emprestimos (
-    id_emprestimo SERIAL PRIMARY KEY,
+-- Tabela Requisicoes: Regista requisicoes, referenciando Livros e Utilizadores (ID como string do Mongo).
+CREATE TABLE Requisicoes (
+    id_requisicao SERIAL PRIMARY KEY,
     id_livro INTEGER REFERENCES Livros(id_livro) ON DELETE CASCADE,
     id_utilizador VARCHAR(24) NOT NULL,  -- Referência ao _id do Mongo como string
-    data_emprestimo DATE NOT NULL DEFAULT CURRENT_DATE,
+    data_requisicao DATE NOT NULL DEFAULT CURRENT_DATE,
     data_devolucao_prevista DATE NOT NULL,
     data_devolucao_real DATE,
-    estado VARCHAR(50) DEFAULT 'Emprestado'  -- ex: 'Emprestado', 'Devolvido', 'Atrasado'
+    estado VARCHAR(50) DEFAULT 'Requisitado'  -- ex: 'Requisitado', 'Devolvido', 'Atrasado'
 );
 
 -- Tabela Reservas: Regista reservas, referenciando Livros e Utilizadores (ID como string do Mongo).

@@ -232,7 +232,7 @@ BEGIN
         RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a empréstimos ativos.', OLD.id_livro;
     END IF;
 
-    -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes não expiradas
+    -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes
     IF EXISTS (
         SELECT 1 
         FROM Reservas 
@@ -279,7 +279,7 @@ BEGIN
         RAISE EXCEPTION 'O ISBN % já está registrado.', isbn_param;
     END IF;
 
-    -- Validação: Verificar se a categoria existe (se fornecida)
+    -- Validação: Verificar se a categoria existe 
     IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
         RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
     END IF;
@@ -289,12 +289,12 @@ BEGIN
         RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
     END IF;
 
-    -- Validação: Verificar se a editora existe (se fornecida)
+    -- Validação: Verificar se a editora existe 
     IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
         RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
-    -- Validação: Verificar se o ano de publicação é razoável (ex.: entre 0 e o ano atual)
+    -- Validação: Verificar se o ano de publicação é entre 0 e o ano atual)
     IF ano_publicacao_param IS NOT NULL AND (ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE)) THEN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
     END IF;
@@ -338,7 +338,7 @@ BEGIN
         RAISE EXCEPTION 'O ISBN % já está registrado para outro livro.', isbn_param;
     END IF;
 
-    -- Validação: Verificar se a categoria existe (se fornecida)
+    -- Validação: Verificar se a categoria existe 
     IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
         RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
     END IF;
@@ -348,7 +348,7 @@ BEGIN
         RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
     END IF;
 
-    -- Validação: Verificar se a editora existe (se fornecida)
+    -- Validação: Verificar se a editora existe 
     IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
         RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
@@ -370,7 +370,7 @@ BEGIN
 END;
 $$;
 
--- Procedimento simplificado para eliminar um livro
+-- Procedimento para eliminar um livro
 CREATE OR REPLACE PROCEDURE eliminar_livro(id_param INT)
 LANGUAGE plpgsql
 AS $$
@@ -380,7 +380,133 @@ BEGIN
         RAISE EXCEPTION 'Livro com ID % não encontrado.', id_param;
     END IF;
 
-    -- Excluir o livro (o trigger verificará empréstimos e reservas)
+    -- Excluir o livro
     DELETE FROM Livros WHERE id_livro = id_param;
+END;
+$$;
+
+/******************************/
+/*          RESERVAS          */
+/******************************/
+
+-- Função para o trigger que verifica exclusão de reservas
+CREATE OR REPLACE FUNCTION verificar_exclusao_reserva()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Impedir exclusão de reservas ativas ou pendentes não expiradas
+    IF OLD.estado IN ('Pendente', 'Ativa') 
+       THEN RAISE EXCEPTION 'Não é possível eliminar a reserva com ID % porque ela está ativa ou pendente.', OLD.id_reserva;
+    END IF;
+
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger que executa a função antes de excluir uma reserva
+CREATE OR REPLACE TRIGGER trigger_verificar_exclusao_reserva
+BEFORE DELETE ON Reservas
+FOR EACH ROW
+EXECUTE FUNCTION verificar_exclusao_reserva();
+
+-- Procedimento para inserir uma nova reserva
+CREATE OR REPLACE PROCEDURE inserir_reserva(
+    id_livro_param INTEGER,
+    id_utilizador_param VARCHAR,
+    data_reserva_param DATE,
+    data_expiracao_param DATE,
+    estado_param VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se o livro existe
+    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    END IF;
+
+    -- Validação: Verificar se id_utilizador não é nulo ou vazio
+    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
+        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+    END IF;
+
+    -- Validação: Verificar se data_expiracao é futura (se fornecida)
+    IF data_expiracao_param IS NOT NULL AND data_expiracao_param <= CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de expiração deve ser futura.';
+    END IF;
+
+    -- Inserir a reserva na tabela
+    INSERT INTO Reservas (id_livro, id_utilizador, data_reserva, data_expiracao, estado)
+    VALUES (
+        id_livro_param,
+        id_utilizador_param,
+        COALESCE(data_reserva_param, CURRENT_DATE),
+        data_expiracao_param,
+        COALESCE(estado_param, 'Pendente')
+    );
+END;
+$$;
+
+-- Procedimento para atualizar uma reserva existente
+CREATE OR REPLACE PROCEDURE atualizar_reserva(
+    id_param INTEGER,
+    id_livro_param INTEGER,
+    id_utilizador_param VARCHAR,
+    data_reserva_param DATE,
+    data_expiracao_param DATE,
+    estado_param VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se a reserva existe
+    IF NOT EXISTS (SELECT 1 FROM Reservas WHERE id_reserva = id_param) THEN
+        RAISE EXCEPTION 'Reserva com ID % não encontrada.', id_param;
+    END IF;
+
+    -- Validação: Verificar se o livro existe
+    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    END IF;
+
+    -- Validação: Verificar se id_utilizador não é nulo ou vazio
+    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
+        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+    END IF;
+
+    -- Validação: Verificar se data_expiracao é futura (se fornecida)
+    IF data_expiracao_param IS NOT NULL AND data_expiracao_param <= CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de expiração deve ser futura.';
+    END IF;
+
+    -- Validação: Verificar se o estado é válido
+    IF estado_param IS NOT NULL AND estado_param NOT IN ('Pendente', 'Ativa', 'Cancelada') THEN
+        RAISE EXCEPTION 'Estado inválido: %. Deve ser Pendente, Ativa ou Cancelada.', estado_param;
+    END IF;
+
+    -- Atualizar os dados da reserva
+    UPDATE Reservas
+    SET id_livro = id_livro_param,
+        id_utilizador = id_utilizador_param,
+        data_reserva = COALESCE(data_reserva_param, data_reserva),
+        data_expiracao = data_expiracao_param,
+        estado = COALESCE(estado_param, estado)
+    WHERE id_reserva = id_param;
+END;
+$$;
+
+-- Procedimento simplificado para eliminar uma reserva
+CREATE OR REPLACE PROCEDURE eliminar_reserva(id_param INTEGER)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se a reserva existe
+    IF NOT EXISTS (SELECT 1 FROM Reservas WHERE id_reserva = id_param) THEN
+        RAISE EXCEPTION 'Reserva com ID % não encontrada.', id_param;
+    END IF;
+
+    -- Excluir a reserva (o trigger verificará restrições)
+    DELETE FROM Reservas WHERE id_reserva = id_param;
 END;
 $$;

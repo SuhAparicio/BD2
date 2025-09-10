@@ -38,19 +38,19 @@ INSERT INTO Editoras (nome, localizacao) VALUES
 ('Intrínseca', 'Rio de Janeiro, Brasil');
 
 -- Inserções para a tabela Livros
-INSERT INTO Livros (titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora) VALUES
-('Harry Potter e a Pedra Filosofal', '9780747532699', 1997, 4, 1, 4),
-('Fundação', '9780553293357', 1951, 2, 2, 3),
-('Sapiens: Uma Breve História da Humanidade', '9780062316097', 2011, 3, 3, 8),
-('O Senhor dos Anéis', '9780261103573', 1954, 4, 4, 4),
+INSERT INTO Livros (titulo, isbn, stock, ano_publicacao, id_categoria, id_autor, id_editora) VALUES
+('Harry Potter e a Pedra Filosofal', '9780747532699', 5, 1997, 4, 1, 4),
+('Fundação', '9780553293357',5,  1951, 2, 2, 3),
+('Sapiens: Uma Breve História da Humanidade', '9780062316097',5,  2011, 3, 3, 8),
+('O Senhor dos Anéis', '9780261103573',5,  1954, 4, 4, 4),
 ('Assassinato no Expresso do Oriente', '9780062693662', 1934, 8, 5, 8),
-('Steve Jobs', '9781451648539', 2011, 5, 6, 3),
-('Orgulho e Preconceito', '9780141439518', 1813, 7, 7, 1),
-('Cem Anos de Solidão', '9780060883287', 1967, 7, 8, 8),
-('Poemas Completos de Emily Dickinson', '9780316184137', 1955, 9, 9, 3),
-('Como Fazer Amigos e Influenciar Pessoas', '9780671027032', 1936, 10, 10, 3),
-('O Hobbit', '9780547928227', 1937, 4, 4, 4),
-('Mistborn: O Império Final', '9780765311788', 2006, 4, 4, 3);
+('Steve Jobs', '9781451648539',5,  2011, 5, 6, 3),
+('Orgulho e Preconceito', '9780141439518',5,  1813, 7, 7, 1),
+('Cem Anos de Solidão', '9780060883287',5,  1967, 7, 8, 8),
+('Poemas Completos de Emily Dickinson', '9780316184137',5,  1955, 9, 9, 3),
+('Como Fazer Amigos e Influenciar Pessoas', '9780671027032',5,  1936, 10, 10, 3),
+('O Hobbit', '9780547928227',5,  1937, 4, 4, 4),
+('Mistborn: O Império Final', '9780765311788',5,  2006, 4, 4, 3);
 
 -- Inserções para a tabela Empréstimos
 -- IDs fictícios de usuários do MongoDB
