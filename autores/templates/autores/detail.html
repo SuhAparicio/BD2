@@ -60,10 +60,11 @@
 <body>
     {% include "navbar.html" %}
     <div class="author-card">
-        <h2 class="author-name">{{ autor.nome }}</h2>
+        <h2 class="author-name">{{ autor.1 }}</h2>
         <img src="https://cdn-icons-png.flaticon.com/512/9131/9131478.png" alt="Author Image" class="author-image">
         <div class="author-details">
-            <p><strong>Data de Nascimento:</strong> {{ autor.data_nascimento|default:"N/A" }}</p>
+            <p><strong>Data de Nascimento:</strong> {{ autor.2|default:"N/A" }}</p>
+            <p><strong>Nacionalidade:</strong> {{ autor.3|default:"N/A" }}</p>
         </div>
         <a href="{% url 'autores:autor_list' %}">Voltar</a>
     </div>

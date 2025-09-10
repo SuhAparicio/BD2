@@ -104,24 +104,24 @@
 </head>
 <body>
     {% include "navbar.html" %}
-  <h1>Lista de Autores</h1>
-  <a href="{% url 'autores:autor_create' %}" class="add-author">Adicionar Autor</a>
-  <div class="author-list-container">
-    <ul class="author-list">
-      {% for autor in autores %}
-      <li class="author-card">
-        <img src="https://cdn-icons-png.flaticon.com/512/9131/9131478.png" alt="Author Image" class="author-avatar">
-        <h2 class="author-name">{{ autor.nome }}</h2>
-        <div class="author-actions">
-          <a href="{% url 'autores:autor_detail' autor.pk %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
-          <a href="{% url 'autores:autor_update' autor.pk %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
-          <a href="{% url 'autores:autor_delete' autor.pk %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
-        </div>
-      </li>
-      {% empty %}
-      <li class="item-list">Nenhum autor encontrado.</li>
-      {% endfor %}
-    </ul>
-  </div>
+    <h1>Lista de Autores</h1>
+    <a href="{% url 'autores:autor_create' %}" class="add-author">Adicionar Autor</a>
+    <div class="author-list-container">
+        <ul class="author-list">
+            {% for autor in autores %}
+            <li class="author-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/9131/9131478.png" alt="Author Image" class="author-avatar">
+                <h2 class="author-name">{{ autor.1 }}</h2>
+                <div class="author-actions">
+                <a href="{% url 'autores:autor_detail' autor.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
+                <a href="{% url 'autores:autor_update' autor.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                <a href="{% url 'autores:autor_delete' autor.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                </div>
+            </li>
+            {% empty %}
+            <li class="item-list">Nenhum autor encontrado.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
