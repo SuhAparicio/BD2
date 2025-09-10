@@ -25,8 +25,8 @@ CREATE TABLE Livros (
     id_livro SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
     isbn VARCHAR(13) UNIQUE NOT NULL,
-    stock INTEGER,
-    ano_publicacao INTEGER,
+    stock INTEGER DEFAULT 1,
+    ano_publicacao INTEGER NOT NULL,
     id_categoria INTEGER REFERENCES Categorias(id_categoria) ON DELETE SET NULL,
     id_autor INTEGER REFERENCES Autores(id_autor) ON DELETE SET NULL,
     id_editora INTEGER REFERENCES Editoras(id_editora) ON DELETE SET NULL

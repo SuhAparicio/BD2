@@ -224,12 +224,12 @@ BEGIN
     -- Validação: Verificar se o livro está associado a empréstimos ativos
     IF EXISTS (
         SELECT 1 
-        FROM Emprestimos 
+        FROM Requisicoes
         WHERE id_livro = OLD.id_livro 
-        AND estado IN ('Emprestado', 'Atrasado')
+        AND estado IN ('Requisitado', 'Atrasado')
         AND data_devolucao_real IS NULL
     ) THEN
-        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a empréstimos ativos.', OLD.id_livro;
+        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a Requisiçao ativa.', OLD.id_livro;
     END IF;
 
     -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes
@@ -280,22 +280,22 @@ BEGIN
     END IF;
 
     -- Validação: Verificar se a categoria existe 
-    IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
+    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
         RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
     END IF;
 
-    -- Validação: Verificar se o autor existe (se fornecido)
-    IF id_autor_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
+    -- Validação: Verificar se o autor existe
+    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
         RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
     END IF;
 
     -- Validação: Verificar se a editora existe 
-    IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
+    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
         RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
     -- Validação: Verificar se o ano de publicação é entre 0 e o ano atual)
-    IF ano_publicacao_param IS NOT NULL AND (ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE)) THEN
+    IF ano_publicacao_param IS NULL OR (ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE)) THEN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
     END IF;
 
@@ -508,5 +508,161 @@ BEGIN
 
     -- Excluir a reserva (o trigger verificará restrições)
     DELETE FROM Reservas WHERE id_reserva = id_param;
+END;
+$$;
+
+/******************************/
+/*        REQUISIÇOES         */
+/******************************/
+
+-- Função para o trigger que verifica exclusão de requisições
+CREATE OR REPLACE FUNCTION verificar_exclusao_requisicao()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Impedir exclusão de requisições ativas ou atrasadas não devolvidas
+    IF OLD.estado IN ('Requisitado', 'Atrasado') 
+       AND OLD.data_devolucao_real IS NULL THEN
+        RAISE EXCEPTION 'Não é possível eliminar a requisição com ID % porque ela está ativa ou atrasada.', OLD.id_requisicao;
+    END IF;
+
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger que executa a função antes de excluir uma requisição
+CREATE OR REPLACE TRIGGER trigger_verificar_exclusao_requisicao
+BEFORE DELETE ON Requisicoes
+FOR EACH ROW
+EXECUTE FUNCTION verificar_exclusao_requisicao();
+
+-- Procedimento para inserir uma nova requisição
+CREATE OR REPLACE PROCEDURE inserir_requisicao(
+    id_livro_param INTEGER,
+    id_utilizador_param VARCHAR,
+    data_requisicao_param DATE,
+    data_devolucao_prevista_param DATE,
+    data_devolucao_real_param DATE,
+    estado_param VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se o livro existe
+    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    END IF;
+
+    -- Validação: Verificar se id_utilizador não é nulo ou vazio
+    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
+        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+    END IF;
+
+    -- Validação: Verificar se data_requisicao não é futura
+    IF data_requisicao_param IS NOT NULL AND data_requisicao_param > CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de requisição não pode ser futura.';
+    END IF;
+
+    -- Validação: Verificar se data_devolucao_prevista é futura
+    IF data_devolucao_prevista_param <= CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de devolução prevista deve ser futura.';
+    END IF;
+
+    -- Validação: Verificar se data_devolucao_real é válida
+    IF data_devolucao_real_param IS NOT NULL AND data_devolucao_real_param < data_requisicao_param THEN
+        RAISE EXCEPTION 'A data de devolução real não pode ser anterior à data de requisição.';
+    END IF;
+
+    -- Validação: Verificar se o estado é válido
+    IF estado_param IS NOT NULL AND estado_param NOT IN ('Requisitado', 'Devolvido', 'Atrasado') THEN
+        RAISE EXCEPTION 'Estado inválido: %. Deve ser Requisitado, Devolvido ou Atrasado.', estado_param;
+    END IF;
+
+    -- Inserir a requisição na tabela
+    INSERT INTO Requisicoes (id_livro, id_utilizador, data_requisicao, data_devolucao_prevista, data_devolucao_real, estado)
+    VALUES (
+        id_livro_param,
+        id_utilizador_param,
+        COALESCE(data_requisicao_param, CURRENT_DATE),
+        data_devolucao_prevista_param,
+        data_devolucao_real_param,
+        COALESCE(estado_param, 'Requisitado')
+    );
+END;
+$$;
+
+-- Procedimento para atualizar uma requisição existente
+CREATE OR REPLACE PROCEDURE atualizar_requisicao(
+    id_param INTEGER,
+    id_livro_param INTEGER,
+    id_utilizador_param VARCHAR,
+    data_requisicao_param DATE,
+    data_devolucao_prevista_param DATE,
+    data_devolucao_real_param DATE,
+    estado_param VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se a requisição existe
+    IF NOT EXISTS (SELECT 1 FROM Requisicoes WHERE id_requisicao = id_param) THEN
+        RAISE EXCEPTION 'Requisição com ID % não encontrada.', id_param;
+    END IF;
+
+    -- Validação: Verificar se o livro existe
+    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    END IF;
+
+    -- Validação: Verificar se id_utilizador não é nulo ou vazio
+    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
+        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+    END IF;
+
+    -- Validação: Verificar se data_requisicao não é futura
+    IF data_requisicao_param IS NOT NULL AND data_requisicao_param > CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de requisição não pode ser futura.';
+    END IF;
+
+    -- Validação: Verificar se data_devolucao_prevista é futura
+    IF data_devolucao_prevista_param <= CURRENT_DATE THEN
+        RAISE EXCEPTION 'A data de devolução prevista deve ser futura.';
+    END IF;
+
+    -- Validação: Verificar se data_devolucao_real é válida
+    IF data_devolucao_real_param IS NOT NULL AND data_devolucao_real_param < data_requisicao_param THEN
+        RAISE EXCEPTION 'A data de devolução real não pode ser anterior à data de requisição.';
+    END IF;
+
+    -- Validação: Verificar se o estado é válido
+    IF estado_param IS NOT NULL AND estado_param NOT IN ('Requisitado', 'Devolvido', 'Atrasado') THEN
+        RAISE EXCEPTION 'Estado inválido: %. Deve ser Requisitado, Devolvido ou Atrasado.', estado_param;
+    END IF;
+
+    -- Atualizar os dados da requisição
+    UPDATE Requisicoes
+    SET id_livro = id_livro_param,
+        id_utilizador = id_utilizador_param,
+        data_requisicao = COALESCE(data_requisicao_param, data_requisicao),
+        data_devolucao_prevista = data_devolucao_prevista_param,
+        data_devolucao_real = data_devolucao_real_param,
+        estado = COALESCE(estado_param, estado)
+    WHERE id_requisicao = id_param;
+END;
+$$;
+
+-- Procedimento para eliminar uma requisição
+CREATE OR REPLACE PROCEDURE eliminar_requisicao(id_param INTEGER)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validação: Verificar se a requisição existe
+    IF NOT EXISTS (SELECT 1 FROM Requisicoes WHERE id_requisicao = id_param) THEN
+        RAISE EXCEPTION 'Requisição com ID % não encontrada.', id_param;
+    END IF;
+
+    -- Excluir a requisição (o trigger verificará restrições)
+    DELETE FROM Requisicoes WHERE id_requisicao = id_param;
 END;
 $$;
