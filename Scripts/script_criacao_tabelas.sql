@@ -43,12 +43,18 @@ CREATE TABLE Requisicoes (
     estado VARCHAR(50) DEFAULT 'Requisitado'  -- ex: 'Requisitado', 'Devolvido', 'Atrasado'
 );
 
--- Tabela Reservas: Regista reservas, referenciando Livros e Utilizadores (ID como string do Mongo).
-CREATE TABLE Reservas (
-    id_reserva SERIAL PRIMARY KEY,
-    id_livro INTEGER REFERENCES Livros(id_livro) ON DELETE CASCADE,
-    id_utilizador VARCHAR(24) NOT NULL,  -- Referência ao _id do Mongo como string
-    data_reserva DATE NOT NULL DEFAULT CURRENT_DATE,
-    data_expiracao DATE,
-    estado VARCHAR(50) DEFAULT 'Pendente'  -- ex: 'Pendente', 'Ativa', 'Cancelada'
-);
+/*******************/
+/*     INDICES     */
+/*******************/
+
+-- Índices para otimizar a função livro_mais_requisitado
+CREATE INDEX idx_requisicoes_data_requisicao ON Requisicoes(data_requisicao);
+CREATE INDEX idx_requisicoes_id_livro ON Requisicoes(id_livro);
+
+-- Índice para otimizar verificações de requisições ativas em triggers e procedimentos
+CREATE INDEX idx_requisicoes_id_livro_estado_devolucao ON Requisicoes(id_livro, estado, data_devolucao_real);
+
+-- Índices para otimizar verificações de chaves estrangeiras em Livros
+CREATE INDEX idx_livros_id_categoria ON Livros(id_categoria);
+CREATE INDEX idx_livros_id_autor ON Livros(id_autor);
+CREATE INDEX idx_livros_id_editora ON Livros(id_editora);

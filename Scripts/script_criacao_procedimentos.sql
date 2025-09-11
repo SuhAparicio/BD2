@@ -797,3 +797,31 @@ CREATE OR REPLACE TRIGGER trigger_verificar_stock_requisicao
 BEFORE INSERT ON Requisicoes
 FOR EACH ROW
 EXECUTE FUNCTION verificar_stock_requisicao();
+
+/******************************/
+/*        ESTATISTICAS        */
+/******************************/
+
+CREATE OR REPLACE FUNCTION livro_mais_requisitado()
+RETURNS TABLE (
+    id_livro INTEGER,
+    titulo VARCHAR,
+    total_requisicoes BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        r.id_livro,
+        l.titulo,
+        COUNT(*) AS total_requisicoes
+    FROM Requisicoes r
+    INNER JOIN Livros l ON r.id_livro = l.id_livro
+    WHERE r.data_requisicao >= CURRENT_DATE - INTERVAL '30 days'
+      AND r.data_requisicao <= CURRENT_DATE
+    GROUP BY r.id_livro, l.titulo
+    ORDER BY total_requisicoes DESC, r.id_livro ASC
+    LIMIT 1;
+END;
+$$;

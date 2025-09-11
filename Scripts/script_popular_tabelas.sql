@@ -67,18 +67,3 @@ INSERT INTO Requisicoes (id_livro, id_utilizador, data_requisicao, data_devoluca
 (10, '66d8f123abc1234567890df8', '2025-08-30', '2025-09-13', NULL, 'Requisitado'),
 (11, '66d8f123abc1234567890df9', '2025-09-01', '2025-09-15', NULL, 'Requisitado'),
 (12, '66d8f123abc1234567890dfa', '2025-09-03', '2025-09-17', NULL, 'Requisitado');
-
--- Inserções para a tabela Reservas
-INSERT INTO Reservas (id_livro, id_utilizador, data_reserva, data_expiracao, estado) VALUES
-(1, '66d8f123abc1234567890def', '2025-08-01', '2025-08-08', 'Ativa'),
-(2, '66d8f123abc1234567890df0', '2025-08-03', '2025-08-10', 'Cancelada'),
-(3, '66d8f123abc1234567890df1', '2025-08-05', '2025-08-12', 'Ativa'),
-(4, '66d8f123abc1234567890df2', '2025-08-07', '2025-08-14', 'Ativa'),
-(5, '66d8f123abc1234567890df3', '2025-08-09', '2025-08-16', 'Cancelada'),
-(6, '66d8f123abc1234567890df4', '2025-08-11', '2025-08-18', 'Ativa'),
-(7, '66d8f123abc1234567890df5', '2025-08-13', '2025-08-20', 'Ativa'),
-(8, '66d8f123abc1234567890df6', '2025-08-15', '2025-08-22', 'Ativa'),
-(9, '66d8f123abc1234567890df7', '2025-08-17', '2025-08-24', 'Ativa'),
-(10, '66d8f123abc1234567890df8', '2025-08-19', '2025-08-26', 'Ativa'),
-(11, '66d8f123abc1234567890df9', '2025-08-21', '2025-08-28', 'Ativa'),
-(12, '66d8f123abc1234567890dfa', '2025-08-23', '2025-08-30', 'Ativa');
