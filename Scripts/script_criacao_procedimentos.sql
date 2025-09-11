@@ -12,7 +12,7 @@ AS $$
 BEGIN
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome da categoria não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome da categoria não pode ser vazio.';
     END IF;
 
     -- Inserir a categoria na tabela
@@ -29,15 +29,20 @@ CREATE OR REPLACE PROCEDURE atualizar_categoria(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_atual VARCHAR;
 BEGIN
+    -- Obter o nome atual da categoria
+    SELECT nome INTO nome_atual FROM Categorias WHERE id_categoria = id_param;
+
     -- Validação: Verificar se a categoria existe
-    IF NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_param;
+    IF nome_atual IS NULL THEN
+        RAISE EXCEPTION 'A categoria "%" não foi encontrada.', nome_param;
     END IF;
 
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome da categoria não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome da categoria não pode ser vazio.';
     END IF;
 
     -- Atualizar os dados da categoria
@@ -52,15 +57,20 @@ $$;
 CREATE OR REPLACE PROCEDURE eliminar_categoria(id_param INT)
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_categoria VARCHAR;
 BEGIN
+    -- Obter o nome da categoria
+    SELECT nome INTO nome_categoria FROM Categorias WHERE id_categoria = id_param;
+
     -- Validação: Verificar se a categoria existe
-    IF NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_param;
+    IF nome_categoria IS NULL THEN
+        RAISE EXCEPTION 'A categoria "%" não foi encontrada.', nome_categoria;
     END IF;
 
     -- Verificar se a categoria está associada a livros
     IF EXISTS (SELECT 1 FROM Livros WHERE id_categoria = id_param) THEN
-        RAISE EXCEPTION 'Não é possível eliminar a categoria com ID % porque ela está associada a livros.', id_param;
+        RAISE EXCEPTION 'Não é possível eliminar a categoria "%" porque ela está associada a livros.', nome_categoria;
     END IF;
 
     -- Excluir a categoria
@@ -82,7 +92,7 @@ AS $$
 BEGIN
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome da editora não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome da editora não pode ser vazio.';
     END IF;
 
     -- Inserir a editora na tabela
@@ -99,15 +109,20 @@ CREATE OR REPLACE PROCEDURE atualizar_editora(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_atual VARCHAR;
 BEGIN
+    -- Obter o nome atual da editora
+    SELECT nome INTO nome_atual FROM Editoras WHERE id_editora = id_param;
+
     -- Validação: Verificar se a editora existe
-    IF NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_param;
+    IF nome_atual IS NULL THEN
+        RAISE EXCEPTION 'A editora "%" não foi encontrada.', nome_param;
     END IF;
 
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome da editora não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome da editora não pode ser vazio.';
     END IF;
 
     -- Atualizar os dados da editora
@@ -122,15 +137,20 @@ $$;
 CREATE OR REPLACE PROCEDURE eliminar_editora(id_param INT)
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_editora VARCHAR;
 BEGIN
+    -- Obter o nome da editora
+    SELECT nome INTO nome_editora FROM Editoras WHERE id_editora = id_param;
+
     -- Validação: Verificar se a editora existe
-    IF NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_param;
+    IF nome_editora IS NULL THEN
+        RAISE EXCEPTION 'A editora "%" não foi encontrada.', nome_editora;
     END IF;
 
     -- Verificar se a editora está associada a livros
     IF EXISTS (SELECT 1 FROM Livros WHERE id_editora = id_param) THEN
-        RAISE EXCEPTION 'Não é possível eliminar a editora com ID % porque ela está associada a livros.', id_param;
+        RAISE EXCEPTION 'Não é possível eliminar a editora "%" porque ela está associada a livros.', nome_editora;
     END IF;
 
     -- Excluir a editora
@@ -153,7 +173,7 @@ AS $$
 BEGIN
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome do autor não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome do autor não pode ser vazio.';
     END IF;
 
     -- Inserir o autor na tabela
@@ -171,15 +191,20 @@ CREATE OR REPLACE PROCEDURE atualizar_autor(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_atual VARCHAR;
 BEGIN
+    -- Obter o nome atual do autor
+    SELECT nome INTO nome_atual FROM Autores WHERE id_autor = id_param;
+
     -- Validação: Verificar se o autor existe
-    IF NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_param;
+    IF nome_atual IS NULL THEN
+        RAISE EXCEPTION 'O autor "%" não foi encontrado.', nome_param;
     END IF;
 
     -- Validação: Verificar se o nome não é nulo ou vazio
     IF nome_param IS NULL OR TRIM(nome_param) = '' THEN
-        RAISE EXCEPTION 'O nome do autor não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O nome do autor não pode ser vazio.';
     END IF;
 
     -- Atualizar os dados do autor
@@ -195,15 +220,20 @@ $$;
 CREATE OR REPLACE PROCEDURE eliminar_autor(id_param INT)
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_autor VARCHAR;
 BEGIN
+    -- Obter o nome do autor
+    SELECT nome INTO nome_autor FROM Autores WHERE id_autor = id_param;
+
     -- Validação: Verificar se o autor existe
-    IF NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_param;
+    IF nome_autor IS NULL THEN
+        RAISE EXCEPTION 'O autor "%" não foi encontrado.', nome_autor;
     END IF;
 
     -- Verificar se o autor está associado a livros
     IF EXISTS (SELECT 1 FROM Livros WHERE id_autor = id_param) THEN
-        RAISE EXCEPTION 'Não é possível eliminar o autor com ID % porque ele está associado a livros.', id_param;
+        RAISE EXCEPTION 'Não é possível eliminar o autor "%" porque ele está associado a livros.', nome_autor;
     END IF;
 
     -- Excluir o autor
@@ -229,7 +259,7 @@ BEGIN
         AND estado IN ('Requisitado', 'Atrasado')
         AND data_devolucao_real IS NULL
     ) THEN
-        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a uma requisição ativa.', OLD.id_livro;
+        RAISE EXCEPTION 'Não é possível eliminar o livro "%" porque ele está emprestado.', OLD.titulo;
     END IF;
 
     RETURN OLD;
@@ -254,45 +284,58 @@ CREATE OR REPLACE PROCEDURE inserir_livro(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    nome_categoria VARCHAR;
+    nome_autor VARCHAR;
+    nome_editora VARCHAR;
 BEGIN
     -- Validação: Verificar se o título não é nulo ou vazio
     IF titulo_param IS NULL OR TRIM(titulo_param) = '' THEN
-        RAISE EXCEPTION 'O título do livro não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O título do livro não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se o ISBN não é nulo ou vazio
     IF isbn_param IS NULL OR TRIM(isbn_param) = '' THEN
-        RAISE EXCEPTION 'O ISBN do livro não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O ISBN do livro não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se o ISBN é único
     IF EXISTS (SELECT 1 FROM Livros WHERE isbn = isbn_param) THEN
-        RAISE EXCEPTION 'O ISBN % já está registrado.', isbn_param;
+        RAISE EXCEPTION 'O ISBN "%" já está registrado para outro livro.', isbn_param;
     END IF;
     
     -- Validação: Verificar se o stock é válido (não negativo)
     IF stock_param IS NULL OR stock_param < 0 THEN
-        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
+        RAISE EXCEPTION 'O stock do livro "%" é inválido. Deve ser maior ou igual a 0.', titulo_param;
     END IF;
     
     -- Validação: Verificar se o ano de publicação é válido
     IF ano_publicacao_param IS NULL OR ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE) THEN
-        RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
+        RAISE EXCEPTION 'O ano de publicação do livro "%" é inválido.', titulo_param;
     END IF;
 
     -- Validação: Verificar se a categoria existe (se fornecida)
-    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
+    IF id_categoria_param IS NOT NULL THEN
+        SELECT nome INTO nome_categoria FROM Categorias WHERE id_categoria = id_categoria_param;
+        IF nome_categoria IS NULL THEN
+            RAISE EXCEPTION 'A categoria "%" não foi encontrada.', nome_categoria;
+        END IF;
     END IF;
 
     -- Validação: Verificar se o autor existe (se fornecido)
-    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
+    IF id_autor_param IS NOT NULL THEN
+        SELECT nome INTO nome_autor FROM Autores WHERE id_autor = id_autor_param;
+        IF nome_autor IS NULL THEN
+            RAISE EXCEPTION 'O autor "%" não foi encontrado.', nome_autor;
+        END IF;
     END IF;
 
     -- Validação: Verificar se a editora existe (se fornecida)
-    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
+    IF id_editora_param IS NOT NULL THEN
+        SELECT nome INTO nome_editora FROM Editoras WHERE id_editora = id_editora_param;
+        IF nome_editora IS NULL THEN
+            RAISE EXCEPTION 'A editora "%" não foi encontrada.', nome_editora;
+        END IF;
     END IF;
 
     -- Inserir o livro na tabela
@@ -314,50 +357,67 @@ CREATE OR REPLACE PROCEDURE atualizar_livro(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    titulo_atual VARCHAR;
+    nome_categoria VARCHAR;
+    nome_autor VARCHAR;
+    nome_editora VARCHAR;
 BEGIN
+    -- Obter o título atual do livro
+    SELECT titulo INTO titulo_atual FROM Livros WHERE id_livro = id_param;
+
     -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_param;
+    IF titulo_atual IS NULL THEN
+        RAISE EXCEPTION 'O livro "%" não foi encontrado.', titulo_param;
     END IF;
 
     -- Validação: Verificar se o título não é nulo ou vazio
     IF titulo_param IS NULL OR TRIM(titulo_param) = '' THEN
-        RAISE EXCEPTION 'O título do livro não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O título do livro não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se o ISBN não é nulo ou vazio
     IF isbn_param IS NULL OR TRIM(isbn_param) = '' THEN
-        RAISE EXCEPTION 'O ISBN do livro não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O ISBN do livro não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se o ISBN é único (ignorando o próprio livro)
     IF EXISTS (SELECT 1 FROM Livros WHERE isbn = isbn_param AND id_livro != id_param) THEN
-        RAISE EXCEPTION 'O ISBN % já está registrado para outro livro.', isbn_param;
+        RAISE EXCEPTION 'O ISBN "%" já está registrado para outro livro.', isbn_param;
     END IF;
     
     -- Validação: Verificar se o stock é válido (não negativo)
     IF stock_param IS NULL OR stock_param < 0 THEN
-        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
+        RAISE EXCEPTION 'O stock do livro "%" é inválido. Deve ser maior ou igual a 0.', titulo_param;
     END IF;
 
     -- Validação: Verificar se o ano de publicação é válido (se fornecido)
     IF ano_publicacao_param IS NULL OR ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE) THEN
-        RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
+        RAISE EXCEPTION 'O ano de publicação do livro "%" é inválido.', titulo_param;
     END IF;
 
     -- Validação: Verificar se a categoria existe (se fornecida)
-    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
+    IF id_categoria_param IS NOT NULL THEN
+        SELECT nome INTO nome_categoria FROM Categorias WHERE id_categoria = id_categoria_param;
+        IF nome_categoria IS NULL THEN
+            RAISE EXCEPTION 'A categoria "%" não foi encontrada.', nome_categoria;
+        END IF;
     END IF;
 
     -- Validação: Verificar se o autor existe (se fornecido)
-    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
+    IF id_autor_param IS NOT NULL THEN
+        SELECT nome INTO nome_autor FROM Autores WHERE id_autor = id_autor_param;
+        IF nome_autor IS NULL THEN
+            RAISE EXCEPTION 'O autor "%" não foi encontrado.', nome_autor;
+        END IF;
     END IF;
 
     -- Validação: Verificar se a editora existe (se fornecida)
-    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
+    IF id_editora_param IS NOT NULL THEN
+        SELECT nome INTO nome_editora FROM Editoras WHERE id_editora = id_editora_param;
+        IF nome_editora IS NULL THEN
+            RAISE EXCEPTION 'A editora "%" não foi encontrada.', nome_editora;
+        END IF;
     END IF;
 
     -- Atualizar os dados do livro
@@ -377,15 +437,15 @@ $$;
 CREATE OR REPLACE PROCEDURE eliminar_livro(id_param INT)
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    titulo_livro VARCHAR;
 BEGIN
-    -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_param;
-    END IF;
+    -- Obter o título do livro
+    SELECT titulo INTO titulo_livro FROM Livros WHERE id_livro = id_param;
 
-    -- Validação: Verificar se o stock é zero
-    IF (SELECT stock FROM Livros WHERE id_livro = id_param) > 0 THEN
-        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ainda há exemplares em stock.', id_param;
+    -- Validação: Verificar se o livro existe
+    IF titulo_livro IS NULL THEN
+        RAISE EXCEPTION 'O livro "%" não foi encontrado.', titulo_livro;
     END IF;
 
     -- Excluir o livro (o trigger verificará requisições)
@@ -406,7 +466,7 @@ BEGIN
     -- Validação: Impedir exclusão de requisições ativas ou atrasadas não devolvidas
     IF OLD.estado IN ('Requisitado', 'Atrasado') 
        AND OLD.data_devolucao_real IS NULL THEN
-        RAISE EXCEPTION 'Não é possível eliminar a requisição com ID % porque ela está ativa ou atrasada.', OLD.id_requisicao;
+        RAISE EXCEPTION 'Não é possível eliminar esta requisição porque ela está ativa ou atrasada.';
     END IF;
 
     RETURN OLD;
@@ -430,30 +490,35 @@ CREATE OR REPLACE PROCEDURE inserir_requisicao(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    titulo_livro VARCHAR;
 BEGIN
+    -- Obter o título do livro
+    SELECT titulo INTO titulo_livro FROM Livros WHERE id_livro = id_livro_param;
+
     -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    IF titulo_livro IS NULL THEN
+        RAISE EXCEPTION 'O livro "%" não foi encontrado.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se id_utilizador não é nulo ou vazio
     IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
-        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O ID do utilizador não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se data_requisicao não é futura
     IF data_requisicao_param IS NOT NULL AND data_requisicao_param > CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de requisição não pode ser futura.';
+        RAISE EXCEPTION 'A data de requisição do livro "%" não pode ser futura.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se data_devolucao_prevista é futura
     IF data_devolucao_prevista_param <= CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de devolução prevista deve ser futura.';
+        RAISE EXCEPTION 'A data de devolução prevista do livro "%" deve ser futura.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se data_devolucao_real é válida
     IF data_devolucao_real_param IS NOT NULL AND data_devolucao_real_param < data_requisicao_param THEN
-        RAISE EXCEPTION 'A data de devolução real não pode ser anterior à data de requisição.';
+        RAISE EXCEPTION 'A data de devolução real do livro "%" não pode ser anterior à data de requisição.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se o estado é válido
@@ -486,35 +551,40 @@ CREATE OR REPLACE PROCEDURE atualizar_requisicao(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    titulo_livro VARCHAR;
 BEGIN
     -- Validação: Verificar se a requisição existe
     IF NOT EXISTS (SELECT 1 FROM Requisicoes WHERE id_requisicao = id_param) THEN
-        RAISE EXCEPTION 'Requisição com ID % não encontrada.', id_param;
+        RAISE EXCEPTION 'Esta requisição não foi encontrada.';
     END IF;
 
+    -- Obter o título do livro
+    SELECT titulo INTO titulo_livro FROM Livros WHERE id_livro = id_livro_param;
+
     -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
+    IF titulo_livro IS NULL THEN
+        RAISE EXCEPTION 'O livro "%" não foi encontrado.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se id_utilizador não é nulo ou vazio
     IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
-        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
+        RAISE EXCEPTION 'O ID do utilizador não pode ser vazio.';
     END IF;
 
     -- Validação: Verificar se data_requisicao não é futura
     IF data_requisicao_param IS NOT NULL AND data_requisicao_param > CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de requisição não pode ser futura.';
+        RAISE EXCEPTION 'A data de requisição do livro "%" não pode ser futura.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se data_devolucao_prevista é futura
     IF data_devolucao_prevista_param <= CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de devolução prevista deve ser futura.';
+        RAISE EXCEPTION 'A data de devolução prevista do livro "%" deve ser futura.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se data_devolucao_real é válida
     IF data_devolucao_real_param IS NOT NULL AND data_devolucao_real_param < data_requisicao_param THEN
-        RAISE EXCEPTION 'A data de devolução real não pode ser anterior à data de requisição.';
+        RAISE EXCEPTION 'A data de devolução real do livro "%" não pode ser anterior à data de requisição.', titulo_livro;
     END IF;
 
     -- Validação: Verificar se o estado é válido
@@ -541,7 +611,7 @@ AS $$
 BEGIN
     -- Validação: Verificar se a requisição existe
     IF NOT EXISTS (SELECT 1 FROM Requisicoes WHERE id_requisicao = id_param) THEN
-        RAISE EXCEPTION 'Requisição com ID % não encontrada.', id_param;
+        RAISE EXCEPTION 'Esta requisição não foi encontrada.';
     END IF;
 
     -- Excluir a requisição (o trigger verificará restrições)
@@ -561,15 +631,16 @@ AS $$
 DECLARE
     stock_livro INTEGER;
     total_requisicoes_ativas INTEGER;
+    titulo_livro VARCHAR;
 BEGIN
-    -- Obter o stock do livro
-    SELECT stock INTO stock_livro
+    -- Obter o stock e o título do livro
+    SELECT stock, titulo INTO stock_livro, titulo_livro
     FROM Livros
     WHERE id_livro = NEW.id_livro;
 
     -- Verificar se o livro existe
     IF stock_livro IS NULL THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', NEW.id_livro;
+        RAISE EXCEPTION 'O livro "%" não foi encontrado.', titulo_livro;
     END IF;
 
     -- Contar requisições ativas para o mesmo livro
@@ -581,8 +652,7 @@ BEGIN
 
     -- Verificar se o total de requisições excede o stock
     IF (total_requisicoes_ativas + 1) > stock_livro THEN
-        RAISE EXCEPTION 'Não é possível criar a requisição para o livro com ID %: stock insuficiente (disponível: %, necessário: %).',
-            NEW.id_livro, stock_livro, (total_requisicoes_ativas + 1);
+        RAISE EXCEPTION 'Não é possível requisitar o livro "%" porque não há exemplares disponíveis.', titulo_livro;
     END IF;
 
     RETURN NEW;
