@@ -257,11 +257,11 @@ EXECUTE FUNCTION verificar_exclusao_livro();
 CREATE OR REPLACE PROCEDURE inserir_livro(
     titulo_param VARCHAR,
     isbn_param VARCHAR,
+    stock_param INTEGER,
     ano_publicacao_param INTEGER,
     id_categoria_param INTEGER,
     id_autor_param INTEGER,
-    id_editora_param INTEGER,
-    stock_param INTEGER
+    id_editora_param INTEGER
 )
 LANGUAGE plpgsql
 AS $$
@@ -280,30 +280,30 @@ BEGIN
     IF EXISTS (SELECT 1 FROM Livros WHERE isbn = isbn_param) THEN
         RAISE EXCEPTION 'O ISBN % já está registrado.', isbn_param;
     END IF;
-
-    -- Validação: Verificar se a categoria existe (se fornecida)
-    IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
+    
+    -- Validação: Verificar se o stock é válido (não negativo)
+    IF stock_param IS NULL OR stock_param < 0 THEN
+        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
     END IF;
-
-    -- Validação: Verificar se o autor existe (se fornecido)
-    IF id_autor_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
-    END IF;
-
-    -- Validação: Verificar se a editora existe (se fornecida)
-    IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
-    END IF;
-
+    
     -- Validação: Verificar se o ano de publicação é válido
     IF ano_publicacao_param IS NULL OR ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE) THEN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
     END IF;
 
-    -- Validação: Verificar se o stock é válido (não negativo)
-    IF stock_param IS NULL OR stock_param < 0 THEN
-        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
+    -- Validação: Verificar se a categoria existe (se fornecida)
+    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
+        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
+    END IF;
+
+    -- Validação: Verificar se o autor existe (se fornecido)
+    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
+        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
+    END IF;
+
+    -- Validação: Verificar se a editora existe (se fornecida)
+    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
+        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
     -- Inserir o livro na tabela
@@ -317,11 +317,11 @@ CREATE OR REPLACE PROCEDURE atualizar_livro(
     id_param INT,
     titulo_param VARCHAR,
     isbn_param VARCHAR,
+    stock_param INTEGER,
     ano_publicacao_param INTEGER,
     id_categoria_param INTEGER,
     id_autor_param INTEGER,
-    id_editora_param INTEGER,
-    stock_param INTEGER
+    id_editora_param INTEGER
 )
 LANGUAGE plpgsql
 AS $$
@@ -345,20 +345,10 @@ BEGIN
     IF EXISTS (SELECT 1 FROM Livros WHERE isbn = isbn_param AND id_livro != id_param) THEN
         RAISE EXCEPTION 'O ISBN % já está registrado para outro livro.', isbn_param;
     END IF;
-
-    -- Validação: Verificar se a categoria existe (se fornecida)
-    IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
-        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
-    END IF;
-
-    -- Validação: Verificar se o autor existe (se fornecido)
-    IF id_autor_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
-        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
-    END IF;
-
-    -- Validação: Verificar se a editora existe (se fornecida)
-    IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
-        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
+    
+    -- Validação: Verificar se o stock é válido (não negativo)
+    IF stock_param IS NULL OR stock_param < 0 THEN
+        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
     END IF;
 
     -- Validação: Verificar se o ano de publicação é válido (se fornecido)
@@ -366,9 +356,19 @@ BEGIN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
     END IF;
 
-    -- Validação: Verificar se o stock é válido (não negativo)
-    IF stock_param IS NULL OR stock_param < 0 THEN
-        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
+    -- Validação: Verificar se a categoria existe (se fornecida)
+    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
+        RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
+    END IF;
+
+    -- Validação: Verificar se o autor existe (se fornecido)
+    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
+        RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
+    END IF;
+
+    -- Validação: Verificar se a editora existe (se fornecida)
+    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
+        RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
     -- Atualizar os dados do livro

@@ -4,22 +4,16 @@
     </div>
     <div class="nav-links">
         {% if user.is_authenticated %}
-            {% for group in user.groups.all %}
-                {% if group.name == 'admin' or group.name == 'bibliotecario' %}
-                    <a href="{% url 'autores:autor_list' %}" {% if request.path|slice:":9" == "/autores/" %}class="active"{% endif %}>Autores</a>
-                    <a href="{% url 'categorias:categoria_list' %}" {% if request.path|slice:":12" == "/categorias/" %}class="active"{% endif %}>Categorias</a>
-                    <a href="{% url 'editoras:editora_list' %}" {% if request.path|slice:":10" == "/editoras/" %}class="active"{% endif %}>Editoras</a>
-                    <a href="{% url 'emprestimos:emprestimo_list' %}" {% if request.path|slice:":13" == "/emprestimos/" %}class="active"{% endif %}>Empréstimos</a>
-                {% endif %}
-            {% endfor %}
-            {% for group in user.groups.all %}
-                {% if group.name == 'admin' %}
-                    <a href="{% url 'utilizadores:utilizador_list' %}" {% if request.path|slice:":14" == "/utilizadores/" %}class="active"{% endif %}>Utilizadores</a>
-                {% endif %}
-            {% endfor %}
-            {# Livros: todos autenticados #}
+            {% if is_admin or is_bibliotecario %}
+                <a href="{% url 'autores:autor_list' %}" {% if request.path|slice:":9" == "/autores/" %}class="active"{% endif %}>Autores</a>
+                <a href="{% url 'categorias:categoria_list' %}" {% if request.path|slice:":12" == "/categorias/" %}class="active"{% endif %}>Categorias</a>
+                <a href="{% url 'editoras:editora_list' %}" {% if request.path|slice:":10" == "/editoras/" %}class="active"{% endif %}>Editoras</a>
+                <a href="{% url 'emprestimos:emprestimo_list' %}" {% if request.path|slice:":13" == "/requisicoes/" %}class="active"{% endif %}>Requisições</a>
+            {% endif %}
+            {% if is_admin %}
+                <a href="{% url 'utilizadores:utilizador_list' %}" {% if request.path|slice:":14" == "/utilizadores/" %}class="active"{% endif %}>Utilizadores</a>
+            {% endif %}
             <a href="{% url 'livros:livro_list' %}" {% if request.path|slice:":8" == "/livros/" %}class="active"{% endif %}>Livros</a>
-            <a href="{% url 'reservas:reserva_list' %}" {% if request.path|slice:":10" == "/reservas/" %}class="active"{% endif %}>Reservas</a>
         {% endif %}
     </div>
     <div class="user">

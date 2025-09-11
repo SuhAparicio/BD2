@@ -16,7 +16,7 @@ def livro_list(request):
     try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT l.id_livro, l.titulo, l.isbn, l.ano_publicacao,
+                SELECT l.id_livro, l.titulo, l.isbn, l.stock, l.ano_publicacao,
                        c.nome as categoria, a.nome as autor, e.nome as editora
                 FROM Livros l
                 LEFT JOIN Categorias c ON l.id_categoria = c.id_categoria
@@ -38,7 +38,7 @@ def livro_detail(request, pk):
     try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT l.id_livro, l.titulo, l.isbn, l.ano_publicacao,
+                SELECT l.id_livro, l.titulo, l.isbn, l.stock, l.ano_publicacao,
                        c.nome as categoria, a.nome as autor, e.nome as editora
                 FROM Livros l
                 LEFT JOIN Categorias c ON l.id_categoria = c.id_categoria
@@ -63,27 +63,31 @@ def livro_create(request):
         cursor.execute("SELECT id_editora, nome FROM Editoras ORDER BY nome;")
         editoras = cursor.fetchall()
     error = None
+    form_data = {}
     if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        isbn = request.POST.get('isbn')
-        ano_publicacao = request.POST.get('ano_publicacao') or None
-        id_categoria = request.POST.get('id_categoria') or None
-        id_autor = request.POST.get('id_autor') or None
-        id_editora = request.POST.get('id_editora') or None
+        form_data = request.POST
+        titulo = form_data.get('titulo')
+        isbn = form_data.get('isbn')
+        stock = form_data.get('stock') or 1
+        ano_publicacao = form_data.get('ano_publicacao') or None
+        id_categoria = form_data.get('id_categoria') or None
+        id_autor = form_data.get('id_autor') or None
+        id_editora = form_data.get('id_editora') or None
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "CALL inserir_livro(%s, %s, %s, %s, %s, %s);",
-                    [titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora]
+                    "CALL inserir_livro(%s, %s, %s, %s, %s, %s, %s);",
+                    [titulo, isbn, stock, ano_publicacao, id_categoria, id_autor, id_editora]
                 )
             return redirect('livros:livro_list')
         except DatabaseError as e:
-            error = str(e).split('\n')[0]  # Só a primeira linha do erro
+            error = str(e).split('\n')[0]
     return render(request, 'livros/create.html', {
         'autores': autores,
         'categorias': categorias,
         'editoras': editoras,
         'error': error,
+        'form_data': form_data,
     })
 
 @login_required
@@ -92,7 +96,7 @@ def livro_update(request, pk):
         return render(request, '404.html', status=404)
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT id_livro, titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora
+            SELECT id_livro, titulo, isbn, stock, ano_publicacao, id_categoria, id_autor, id_editora
             FROM Livros WHERE id_livro = %s;
         """, [pk])
         livro = cursor.fetchone()
@@ -103,28 +107,32 @@ def livro_update(request, pk):
         cursor.execute("SELECT id_editora, nome FROM Editoras ORDER BY nome;")
         editoras = cursor.fetchall()
     error = None
+    form_data = None
     if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        isbn = request.POST.get('isbn')
-        ano_publicacao = request.POST.get('ano_publicacao') or None
-        id_categoria = request.POST.get('id_categoria') or None
-        id_autor = request.POST.get('id_autor') or None
-        id_editora = request.POST.get('id_editora') or None
+        form_data = request.POST
+        titulo = form_data.get('titulo')
+        isbn = form_data.get('isbn')
+        stock = form_data.get('stock') or 1
+        ano_publicacao = form_data.get('ano_publicacao') or None
+        id_categoria = form_data.get('id_categoria') or None
+        id_autor = form_data.get('id_autor') or None
+        id_editora = form_data.get('id_editora') or None     
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "CALL atualizar_livro(%s, %s, %s, %s, %s, %s, %s);",
-                    [pk, titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora]
+                    "CALL atualizar_livro(%s, %s, %s, %s, %s, %s, %s, %s);",
+                    [pk, titulo, isbn, stock, ano_publicacao, id_categoria, id_autor, id_editora]
                 )
             return redirect('livros:livro_list')
         except DatabaseError as e:
-            error = str(e).split('\n')[0]  # Só a primeira linha do erro
+            error = str(e).split('\n')[0]
     return render(request, 'livros/update.html', {
         'livro': livro,
         'autores': autores,
         'categorias': categorias,
         'editoras': editoras,
         'error': error,
+        'form_data': form_data,
     })
 
 @login_required

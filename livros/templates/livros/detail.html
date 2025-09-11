@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Livro</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -71,11 +73,12 @@
         <h2 class="book-name">{{ livro.1 }}</h2>
         <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Book Image" class="book-image">
         <div class="book-details">
-            <p><strong>Autor:</strong> {{ livro.5 }}</p>
-            <p><strong>Categoria:</strong> {{ livro.4 }}</p>
-            <p><strong>Editora:</strong> {{ livro.6 }}</p>
+            <p><strong>Autor:</strong> {{ livro.6 }}</p>
+            <p><strong>Categoria:</strong> {{ livro.5 }}</p>
+            <p><strong>Editora:</strong> {{ livro.7 }}</p>
             <p><strong>ISBN:</strong> {{ livro.2 }}</p>
-            <p><strong>Ano de Publicação:</strong> {{ livro.3|default:"N/A" }}</p>
+            <p><strong>Stock:</strong> {{ livro.3 }}</p>
+            <p><strong>Ano de Publicação:</strong> {{ livro.4|default:"N/A" }}</p>
         </div>
         <a href="{% url 'livros:livro_list' %}">Voltar</a>
     </div>
