@@ -215,29 +215,30 @@ $$;
 /*           LIVROS          */
 /*****************************/
 
--- Função para o trigger que verifica empréstimos e reservas antes de excluir um livro
+-- Função para o trigger que verifica requisições e reservas antes de excluir um livro
 CREATE OR REPLACE FUNCTION verificar_exclusao_livro()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Validação: Verificar se o livro está associado a empréstimos ativos
+    -- Validação: Verificar se o livro está associado a requisições ativas
     IF EXISTS (
         SELECT 1 
-        FROM Requisicoes
+        FROM Requisicoes 
         WHERE id_livro = OLD.id_livro 
         AND estado IN ('Requisitado', 'Atrasado')
         AND data_devolucao_real IS NULL
     ) THEN
-        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a Requisiçao ativa.', OLD.id_livro;
+        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a uma requisição ativa.', OLD.id_livro;
     END IF;
 
-    -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes
+    -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes não expiradas
     IF EXISTS (
         SELECT 1 
         FROM Reservas 
         WHERE id_livro = OLD.id_livro 
         AND estado IN ('Pendente', 'Ativa')
+        AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
     ) THEN
         RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a reservas ativas ou pendentes.', OLD.id_livro;
     END IF;
@@ -259,7 +260,8 @@ CREATE OR REPLACE PROCEDURE inserir_livro(
     ano_publicacao_param INTEGER,
     id_categoria_param INTEGER,
     id_autor_param INTEGER,
-    id_editora_param INTEGER
+    id_editora_param INTEGER,
+    stock_param INTEGER
 )
 LANGUAGE plpgsql
 AS $$
@@ -279,29 +281,34 @@ BEGIN
         RAISE EXCEPTION 'O ISBN % já está registrado.', isbn_param;
     END IF;
 
-    -- Validação: Verificar se a categoria existe 
-    IF id_categoria_param IS NULL OR NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
+    -- Validação: Verificar se a categoria existe (se fornecida)
+    IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
         RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
     END IF;
 
-    -- Validação: Verificar se o autor existe
-    IF id_autor_param IS NULL OR NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
+    -- Validação: Verificar se o autor existe (se fornecido)
+    IF id_autor_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Autores WHERE id_autor = id_autor_param) THEN
         RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
     END IF;
 
-    -- Validação: Verificar se a editora existe 
-    IF id_editora_param IS NULL OR NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
+    -- Validação: Verificar se a editora existe (se fornecida)
+    IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
         RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
-    -- Validação: Verificar se o ano de publicação é entre 0 e o ano atual)
-    IF ano_publicacao_param IS NULL OR (ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE)) THEN
+    -- Validação: Verificar se o ano de publicação é válido
+    IF ano_publicacao_param IS NULL OR ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE) THEN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
     END IF;
 
+    -- Validação: Verificar se o stock é válido (não negativo)
+    IF stock_param IS NULL OR stock_param < 0 THEN
+        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
+    END IF;
+
     -- Inserir o livro na tabela
-    INSERT INTO Livros (titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora)
-    VALUES (titulo_param, isbn_param, ano_publicacao_param, id_categoria_param, id_autor_param, id_editora_param);
+    INSERT INTO Livros (titulo, isbn, ano_publicacao, id_categoria, id_autor, id_editora, stock)
+    VALUES (titulo_param, isbn_param, ano_publicacao_param, id_categoria_param, id_autor_param, id_editora_param, stock_param);
 END;
 $$;
 
@@ -313,7 +320,8 @@ CREATE OR REPLACE PROCEDURE atualizar_livro(
     ano_publicacao_param INTEGER,
     id_categoria_param INTEGER,
     id_autor_param INTEGER,
-    id_editora_param INTEGER
+    id_editora_param INTEGER,
+    stock_param INTEGER
 )
 LANGUAGE plpgsql
 AS $$
@@ -338,7 +346,7 @@ BEGIN
         RAISE EXCEPTION 'O ISBN % já está registrado para outro livro.', isbn_param;
     END IF;
 
-    -- Validação: Verificar se a categoria existe 
+    -- Validação: Verificar se a categoria existe (se fornecida)
     IF id_categoria_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Categorias WHERE id_categoria = id_categoria_param) THEN
         RAISE EXCEPTION 'Categoria com ID % não encontrada.', id_categoria_param;
     END IF;
@@ -348,14 +356,19 @@ BEGIN
         RAISE EXCEPTION 'Autor com ID % não encontrado.', id_autor_param;
     END IF;
 
-    -- Validação: Verificar se a editora existe 
+    -- Validação: Verificar se a editora existe (se fornecida)
     IF id_editora_param IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Editoras WHERE id_editora = id_editora_param) THEN
         RAISE EXCEPTION 'Editora com ID % não encontrada.', id_editora_param;
     END IF;
 
-    -- Validação: Verificar se o ano de publicação é razoável (se fornecido)
-    IF ano_publicacao_param IS NOT NULL AND (ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE)) THEN
+    -- Validação: Verificar se o ano de publicação é válido (se fornecido)
+    IF ano_publicacao_param IS NULL OR ano_publicacao_param < 0 OR ano_publicacao_param > EXTRACT(YEAR FROM CURRENT_DATE) THEN
         RAISE EXCEPTION 'Ano de publicação % inválido.', ano_publicacao_param;
+    END IF;
+
+    -- Validação: Verificar se o stock é válido (não negativo)
+    IF stock_param IS NULL OR stock_param < 0 THEN
+        RAISE EXCEPTION 'O stock % é inválido. Deve ser maior ou igual a 0.', stock_param;
     END IF;
 
     -- Atualizar os dados do livro
@@ -365,7 +378,8 @@ BEGIN
         ano_publicacao = ano_publicacao_param,
         id_categoria = id_categoria_param,
         id_autor = id_autor_param,
-        id_editora = id_editora_param
+        id_editora = id_editora_param,
+        stock = stock_param
     WHERE id_livro = id_param;
 END;
 $$;
@@ -380,7 +394,12 @@ BEGIN
         RAISE EXCEPTION 'Livro com ID % não encontrado.', id_param;
     END IF;
 
-    -- Excluir o livro
+    -- Validação: Verificar se o stock é zero
+    IF (SELECT stock FROM Livros WHERE id_livro = id_param) > 0 THEN
+        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ainda há exemplares em stock.', id_param;
+    END IF;
+
+    -- Excluir o livro (o trigger verificará requisições e reservas)
     DELETE FROM Livros WHERE id_livro = id_param;
 END;
 $$;
@@ -666,3 +685,115 @@ BEGIN
     DELETE FROM Requisicoes WHERE id_requisicao = id_param;
 END;
 $$;
+
+/******************************/
+/*        STOCK RESERVA       */
+/******************************/
+
+-- Função para o trigger que verifica o stock antes de inserir uma reserva
+CREATE OR REPLACE FUNCTION verificar_stock_reserva()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    stock_livro INTEGER;
+    total_reservas_ativas INTEGER;
+    total_requisicoes_ativas INTEGER;
+BEGIN
+    -- Obter o stock do livro
+    SELECT stock INTO stock_livro
+    FROM Livros
+    WHERE id_livro = NEW.id_livro;
+
+    -- Verificar se o livro existe
+    IF stock_livro IS NULL THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', NEW.id_livro;
+    END IF;
+
+    -- Contar reservas ativas ou pendentes não expiradas para o mesmo livro no mesmo dia
+    SELECT COUNT(*) INTO total_reservas_ativas
+    FROM Reservas
+    WHERE id_livro = NEW.id_livro
+      AND estado IN ('Pendente', 'Ativa')
+      AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
+      AND data_reserva = CURRENT_DATE;
+
+    -- Contar requisições ativas para o mesmo livro no mesmo dia
+    SELECT COUNT(*) INTO total_requisicoes_ativas
+    FROM Requisicoes
+    WHERE id_livro = NEW.id_livro
+      AND estado IN ('Requisitado', 'Atrasado')
+      AND data_devolucao_real IS NULL
+      AND data_requisicao = CURRENT_DATE;
+
+    -- Verificar se o total de reservas e requisições excede o stock
+    IF (total_reservas_ativas + total_requisicoes_ativas + 1) > stock_livro THEN
+        RAISE EXCEPTION 'Não é possível criar a reserva para o livro com ID %: stock insuficiente (disponível: %, necessário: %).',
+            NEW.id_livro, stock_livro, (total_reservas_ativas + total_requisicoes_ativas + 1);
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger que executa a função antes de inserir uma reserva
+CREATE OR REPLACE TRIGGER trigger_verificar_stock_reserva
+BEFORE INSERT ON Reservas
+FOR EACH ROW
+EXECUTE FUNCTION verificar_stock_reserva();
+
+/******************************/
+/*      STOCK REQUISIÇÃO      */
+/******************************/
+
+-- Função para o trigger que verifica o stock antes de inserir uma requisição
+CREATE OR REPLACE FUNCTION verificar_stock_requisicao()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    stock_livro INTEGER;
+    total_reservas_ativas INTEGER;
+    total_requisicoes_ativas INTEGER;
+BEGIN
+    -- Obter o stock do livro
+    SELECT stock INTO stock_livro
+    FROM Livros
+    WHERE id_livro = NEW.id_livro;
+
+    -- Verificar se o livro existe
+    IF stock_livro IS NULL THEN
+        RAISE EXCEPTION 'Livro com ID % não encontrado.', NEW.id_livro;
+    END IF;
+
+    -- Contar reservas ativas ou pendentes não expiradas para o mesmo livro no mesmo dia
+    SELECT COUNT(*) INTO total_reservas_ativas
+    FROM Reservas
+    WHERE id_livro = NEW.id_livro
+      AND estado IN ('Pendente', 'Ativa')
+      AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
+      AND data_reserva = CURRENT_DATE;
+
+    -- Contar requisições ativas para o mesmo livro no mesmo dia
+    SELECT COUNT(*) INTO total_requisicoes_ativas
+    FROM Requisicoes
+    WHERE id_livro = NEW.id_livro
+      AND estado IN ('Requisitado', 'Atrasado')
+      AND data_devolucao_real IS NULL
+      AND data_requisicao = CURRENT_DATE;
+
+    -- Verificar se o total de reservas e requisições excede o stock
+    IF (total_reservas_ativas + total_requisicoes_ativas + 1) > stock_livro THEN
+        RAISE EXCEPTION 'Não é possível criar a requisição para o livro com ID %: stock insuficiente (disponível: %, necessário: %).',
+            NEW.id_livro, stock_livro, (total_reservas_ativas + total_requisicoes_ativas + 1);
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger que executa a função antes de inserir uma requisição
+CREATE OR REPLACE TRIGGER trigger_verificar_stock_requisicao
+BEFORE INSERT ON Requisicoes
+FOR EACH ROW
+EXECUTE FUNCTION verificar_stock_requisicao();
