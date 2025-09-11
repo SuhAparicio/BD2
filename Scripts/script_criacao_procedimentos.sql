@@ -215,7 +215,7 @@ $$;
 /*           LIVROS          */
 /*****************************/
 
--- Função para o trigger que verifica requisições e reservas antes de excluir um livro
+-- Função para o trigger que verifica requisições antes de excluir um livro
 CREATE OR REPLACE FUNCTION verificar_exclusao_livro()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -230,17 +230,6 @@ BEGIN
         AND data_devolucao_real IS NULL
     ) THEN
         RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a uma requisição ativa.', OLD.id_livro;
-    END IF;
-
-    -- Validação: Verificar se o livro está associado a reservas ativas ou pendentes não expiradas
-    IF EXISTS (
-        SELECT 1 
-        FROM Reservas 
-        WHERE id_livro = OLD.id_livro 
-        AND estado IN ('Pendente', 'Ativa')
-        AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
-    ) THEN
-        RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ele está associado a reservas ativas ou pendentes.', OLD.id_livro;
     END IF;
 
     RETURN OLD;
@@ -399,139 +388,13 @@ BEGIN
         RAISE EXCEPTION 'Não é possível eliminar o livro com ID % porque ainda há exemplares em stock.', id_param;
     END IF;
 
-    -- Excluir o livro (o trigger verificará requisições e reservas)
+    -- Excluir o livro (o trigger verificará requisições)
     DELETE FROM Livros WHERE id_livro = id_param;
 END;
 $$;
 
 /******************************/
-/*          RESERVAS          */
-/******************************/
-
--- Função para o trigger que verifica exclusão de reservas
-CREATE OR REPLACE FUNCTION verificar_exclusao_reserva()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Validação: Impedir exclusão de reservas ativas ou pendentes não expiradas
-    IF OLD.estado IN ('Pendente', 'Ativa') 
-       THEN RAISE EXCEPTION 'Não é possível eliminar a reserva com ID % porque ela está ativa ou pendente.', OLD.id_reserva;
-    END IF;
-
-    RETURN OLD;
-END;
-$$;
-
--- Trigger que executa a função antes de excluir uma reserva
-CREATE OR REPLACE TRIGGER trigger_verificar_exclusao_reserva
-BEFORE DELETE ON Reservas
-FOR EACH ROW
-EXECUTE FUNCTION verificar_exclusao_reserva();
-
--- Procedimento para inserir uma nova reserva
-CREATE OR REPLACE PROCEDURE inserir_reserva(
-    id_livro_param INTEGER,
-    id_utilizador_param VARCHAR,
-    data_reserva_param DATE,
-    data_expiracao_param DATE,
-    estado_param VARCHAR
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
-    END IF;
-
-    -- Validação: Verificar se id_utilizador não é nulo ou vazio
-    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
-        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
-    END IF;
-
-    -- Validação: Verificar se data_expiracao é futura (se fornecida)
-    IF data_expiracao_param IS NOT NULL AND data_expiracao_param <= CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de expiração deve ser futura.';
-    END IF;
-
-    -- Inserir a reserva na tabela
-    INSERT INTO Reservas (id_livro, id_utilizador, data_reserva, data_expiracao, estado)
-    VALUES (
-        id_livro_param,
-        id_utilizador_param,
-        COALESCE(data_reserva_param, CURRENT_DATE),
-        data_expiracao_param,
-        COALESCE(estado_param, 'Pendente')
-    );
-END;
-$$;
-
--- Procedimento para atualizar uma reserva existente
-CREATE OR REPLACE PROCEDURE atualizar_reserva(
-    id_param INTEGER,
-    id_livro_param INTEGER,
-    id_utilizador_param VARCHAR,
-    data_reserva_param DATE,
-    data_expiracao_param DATE,
-    estado_param VARCHAR
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Validação: Verificar se a reserva existe
-    IF NOT EXISTS (SELECT 1 FROM Reservas WHERE id_reserva = id_param) THEN
-        RAISE EXCEPTION 'Reserva com ID % não encontrada.', id_param;
-    END IF;
-
-    -- Validação: Verificar se o livro existe
-    IF NOT EXISTS (SELECT 1 FROM Livros WHERE id_livro = id_livro_param) THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', id_livro_param;
-    END IF;
-
-    -- Validação: Verificar se id_utilizador não é nulo ou vazio
-    IF id_utilizador_param IS NULL OR TRIM(id_utilizador_param) = '' THEN
-        RAISE EXCEPTION 'O ID do utilizador não pode ser nulo ou vazio.';
-    END IF;
-
-    -- Validação: Verificar se data_expiracao é futura (se fornecida)
-    IF data_expiracao_param IS NOT NULL AND data_expiracao_param <= CURRENT_DATE THEN
-        RAISE EXCEPTION 'A data de expiração deve ser futura.';
-    END IF;
-
-    -- Validação: Verificar se o estado é válido
-    IF estado_param IS NOT NULL AND estado_param NOT IN ('Pendente', 'Ativa', 'Cancelada') THEN
-        RAISE EXCEPTION 'Estado inválido: %. Deve ser Pendente, Ativa ou Cancelada.', estado_param;
-    END IF;
-
-    -- Atualizar os dados da reserva
-    UPDATE Reservas
-    SET id_livro = id_livro_param,
-        id_utilizador = id_utilizador_param,
-        data_reserva = COALESCE(data_reserva_param, data_reserva),
-        data_expiracao = data_expiracao_param,
-        estado = COALESCE(estado_param, estado)
-    WHERE id_reserva = id_param;
-END;
-$$;
-
--- Procedimento simplificado para eliminar uma reserva
-CREATE OR REPLACE PROCEDURE eliminar_reserva(id_param INTEGER)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Validação: Verificar se a reserva existe
-    IF NOT EXISTS (SELECT 1 FROM Reservas WHERE id_reserva = id_param) THEN
-        RAISE EXCEPTION 'Reserva com ID % não encontrada.', id_param;
-    END IF;
-
-    -- Excluir a reserva (o trigger verificará restrições)
-    DELETE FROM Reservas WHERE id_reserva = id_param;
-END;
-$$;
-
-/******************************/
-/*        REQUISIÇOES         */
+/*        REQUISIÇÕES         */
 /******************************/
 
 -- Função para o trigger que verifica exclusão de requisições
@@ -687,62 +550,6 @@ END;
 $$;
 
 /******************************/
-/*        STOCK RESERVA       */
-/******************************/
-
--- Função para o trigger que verifica o stock antes de inserir uma reserva
-CREATE OR REPLACE FUNCTION verificar_stock_reserva()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    stock_livro INTEGER;
-    total_reservas_ativas INTEGER;
-    total_requisicoes_ativas INTEGER;
-BEGIN
-    -- Obter o stock do livro
-    SELECT stock INTO stock_livro
-    FROM Livros
-    WHERE id_livro = NEW.id_livro;
-
-    -- Verificar se o livro existe
-    IF stock_livro IS NULL THEN
-        RAISE EXCEPTION 'Livro com ID % não encontrado.', NEW.id_livro;
-    END IF;
-
-    -- Contar reservas ativas ou pendentes não expiradas para o mesmo livro no mesmo dia
-    SELECT COUNT(*) INTO total_reservas_ativas
-    FROM Reservas
-    WHERE id_livro = NEW.id_livro
-      AND estado IN ('Pendente', 'Ativa')
-      AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
-      AND data_reserva = CURRENT_DATE;
-
-    -- Contar requisições ativas para o mesmo livro no mesmo dia
-    SELECT COUNT(*) INTO total_requisicoes_ativas
-    FROM Requisicoes
-    WHERE id_livro = NEW.id_livro
-      AND estado IN ('Requisitado', 'Atrasado')
-      AND data_devolucao_real IS NULL
-      AND data_requisicao = CURRENT_DATE;
-
-    -- Verificar se o total de reservas e requisições excede o stock
-    IF (total_reservas_ativas + total_requisicoes_ativas + 1) > stock_livro THEN
-        RAISE EXCEPTION 'Não é possível criar a reserva para o livro com ID %: stock insuficiente (disponível: %, necessário: %).',
-            NEW.id_livro, stock_livro, (total_reservas_ativas + total_requisicoes_ativas + 1);
-    END IF;
-
-    RETURN NEW;
-END;
-$$;
-
--- Trigger que executa a função antes de inserir uma reserva
-CREATE OR REPLACE TRIGGER trigger_verificar_stock_reserva
-BEFORE INSERT ON Reservas
-FOR EACH ROW
-EXECUTE FUNCTION verificar_stock_reserva();
-
-/******************************/
 /*      STOCK REQUISIÇÃO      */
 /******************************/
 
@@ -753,7 +560,6 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     stock_livro INTEGER;
-    total_reservas_ativas INTEGER;
     total_requisicoes_ativas INTEGER;
 BEGIN
     -- Obter o stock do livro
@@ -766,26 +572,17 @@ BEGIN
         RAISE EXCEPTION 'Livro com ID % não encontrado.', NEW.id_livro;
     END IF;
 
-    -- Contar reservas ativas ou pendentes não expiradas para o mesmo livro no mesmo dia
-    SELECT COUNT(*) INTO total_reservas_ativas
-    FROM Reservas
-    WHERE id_livro = NEW.id_livro
-      AND estado IN ('Pendente', 'Ativa')
-      AND (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE)
-      AND data_reserva = CURRENT_DATE;
-
-    -- Contar requisições ativas para o mesmo livro no mesmo dia
+    -- Contar requisições ativas para o mesmo livro
     SELECT COUNT(*) INTO total_requisicoes_ativas
     FROM Requisicoes
     WHERE id_livro = NEW.id_livro
       AND estado IN ('Requisitado', 'Atrasado')
-      AND data_devolucao_real IS NULL
-      AND data_requisicao = CURRENT_DATE;
+      AND data_devolucao_real IS NULL;
 
-    -- Verificar se o total de reservas e requisições excede o stock
-    IF (total_reservas_ativas + total_requisicoes_ativas + 1) > stock_livro THEN
+    -- Verificar se o total de requisições excede o stock
+    IF (total_requisicoes_ativas + 1) > stock_livro THEN
         RAISE EXCEPTION 'Não é possível criar a requisição para o livro com ID %: stock insuficiente (disponível: %, necessário: %).',
-            NEW.id_livro, stock_livro, (total_reservas_ativas + total_requisicoes_ativas + 1);
+            NEW.id_livro, stock_livro, (total_requisicoes_ativas + 1);
     END IF;
 
     RETURN NEW;
@@ -799,7 +596,7 @@ FOR EACH ROW
 EXECUTE FUNCTION verificar_stock_requisicao();
 
 /******************************/
-/*        ESTATISTICAS        */
+/*        ESTATÍSTICAS        */
 /******************************/
 
 CREATE OR REPLACE FUNCTION livro_mais_requisitado()
