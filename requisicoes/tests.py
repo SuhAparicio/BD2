@@ -3,8 +3,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from datetime import date
 from livros.models import Livro, Autor, Categoria
-from emprestimos.models import Emprestimo
-from emprestimos.forms import EmprestimoForm
+from requisicoes.models import Requisicao
+from requisicoes.forms import RequisicaoForm
 from unittest.mock import patch
 
 # Função utilitária para criar utilizador com permissões
@@ -30,18 +30,18 @@ class EmprestimoModelTest(TestCase):
             data_publicacao=date.today(),
             disponivel=True
         )
-        self.emprestimo = Emprestimo.objects.create(
+        self.requisicao = Requisicao.objects.create(
             livro=self.livro,
             utilizador_id='12345',
-            data_emprestimo=date.today()
+            data_requisicao=date.today()
         )
 
-    def test_emprestimo_creation(self):
-        self.assertEqual(self.emprestimo.livro, self.livro)
-        self.assertEqual(self.emprestimo.utilizador_id, '12345')
+    def test_requisicao_creation(self):
+        self.assertEqual(self.requisicao.livro, self.livro)
+        self.assertEqual(self.requisicao.utilizador_id, '12345')
 
-    def test_emprestimo_delete_updates_livro_disponivel(self):
-        self.emprestimo.delete()
+    def test_requisicao_delete_updates_livro_disponivel(self):
+        self.requisicao.delete()
         self.livro.refresh_from_db()
         self.assertTrue(self.livro.disponivel)
 
@@ -68,7 +68,7 @@ class EmprestimoFormTest(TestCase):
             'utilizador_id': '12345',
             'data_devolucao': date.today()
         }
-        form = EmprestimoForm(data=form_data)
+        form = RequisicaoForm(data=form_data)
         form.fields['utilizador_id'].choices = [('12345', 'teste')]
         self.assertTrue(form.is_valid())
 
@@ -78,7 +78,7 @@ class EmprestimoFormTest(TestCase):
             'utilizador_id': '',
             'data_devolucao': ''
         }
-        form = EmprestimoForm(data=form_data)
+        form = RequisicaoForm(data=form_data)
         form.fields['utilizador_id'].choices = [('12345', 'teste')]
         self.assertFalse(form.is_valid())
 
@@ -102,30 +102,30 @@ class EmprestimoViewsTest(TestCase):
             disponivel=True
         )
 
-        self.emprestimo = Emprestimo.objects.create(
+        self.requisicao = Requisicao.objects.create(
             livro=self.livro,
             utilizador_id='12345',
-            data_emprestimo=date.today()
+            data_requisicao=date.today()
         )
 
-    def test_emprestimo_list_view(self):
-        url = reverse('emprestimos:emprestimo_list')
+    def test_requisicao_list_view(self):
+        url = reverse('requisicoes:requisicao_list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.livro.titulo)
 
-    @patch('emprestimos.views.listar_utilizadores')
-    def test_emprestimo_detail_view(self, mock_listar):
+    @patch('requisicoes.views.listar_utilizadores')
+    def test_requisicao_detail_view(self, mock_listar):
         mock_listar.return_value = [{'_id': '12345', 'nome': 'teste'}]
-        url = reverse('emprestimos:emprestimo_detail', args=[self.emprestimo.id])
+        url = reverse('requisicoes:requisicao_detail', args=[self.requisicao.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.livro.titulo)
 
-    @patch('emprestimos.views.listar_utilizadores')
-    def test_emprestimo_create_view(self, mock_listar):
+    @patch('requisicoes.views.listar_utilizadores')
+    def test_requisicao_create_view(self, mock_listar):
         mock_listar.return_value = [{'_id': '12345', 'nome': 'teste'}]
-        url = reverse('emprestimos:emprestimo_create')
+        url = reverse('requisicoes:requisicao_create')
         data = {
             'livro': self.livro.id,
             'utilizador_id': '12345',
@@ -133,12 +133,12 @@ class EmprestimoViewsTest(TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(Emprestimo.objects.filter(livro=self.livro).exists())
+        self.assertTrue(Requisicao.objects.filter(livro=self.livro).exists())
 
-    @patch('emprestimos.views.listar_utilizadores')
-    def test_emprestimo_update_view(self, mock_listar):
+    @patch('requisicoes.views.listar_utilizadores')
+    def test_requisicao_update_view(self, mock_listar):
         mock_listar.return_value = [{'_id': '12345', 'nome': 'teste'}]
-        url = reverse('emprestimos:emprestimo_update', args=[self.emprestimo.id])
+        url = reverse('requisicoes:requisicao_update', args=[self.requisicao.id])
         data = {
             'livro': self.livro.id,
             'utilizador_id': '12345',
@@ -146,13 +146,13 @@ class EmprestimoViewsTest(TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-        self.emprestimo.refresh_from_db()
-        self.assertEqual(self.emprestimo.livro, self.livro)
+        self.requisicao.refresh_from_db()
+        self.assertEqual(self.requisicao.livro, self.livro)
 
-    @patch('emprestimos.views.listar_utilizadores')
-    def test_emprestimo_delete_view(self, mock_listar):
+    @patch('requisicoes.views.listar_utilizadores')
+    def test_requisicao_delete_view(self, mock_listar):
         mock_listar.return_value = [{'_id': '12345', 'nome': 'teste'}]
-        url = reverse('emprestimos:emprestimo_delete', args=[self.emprestimo.id])
+        url = reverse('requisicoes:requisicao_delete', args=[self.requisicao.id])
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(Emprestimo.objects.filter(id=self.emprestimo.id).exists())
+        self.assertFalse(Requisicao.objects.filter(id=self.requisicao.id).exists())

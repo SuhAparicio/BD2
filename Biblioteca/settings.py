@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'autores',
     'categorias',
     'livros',
-    'emprestimos',
+    'requisicoes',
     'utilizadores',
     'editoras',
 ]

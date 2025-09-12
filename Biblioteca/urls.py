@@ -27,7 +27,7 @@ urlpatterns = [
     path('categorias/', include('categorias.urls')),
     path('editoras/', include('editoras.urls')),
     path('livros/', include('livros.urls')),
-    path('emprestimos/', include('emprestimos.urls')),
+    path('requisicoes/', include('requisicoes.urls')),
     path('utilizadores/', include('utilizadores.urls')),
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
