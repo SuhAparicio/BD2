@@ -406,7 +406,8 @@ $$;
 CREATE OR REPLACE FUNCTION filtrar_requisicoes(
     titulo_livro_param VARCHAR,
     id_utilizador_param VARCHAR,
-    ativa_param BOOLEAN
+    ativa_param BOOLEAN,
+    nao_mostrar_ativas_param BOOLEAN
 )
 RETURNS TABLE (
     id_requisicao INTEGER,
@@ -434,14 +435,19 @@ BEGIN
     WHERE 
         (titulo_livro_param IS NULL OR l.titulo ILIKE '%' || titulo_livro_param || '%')
         AND (id_utilizador_param IS NULL OR r.id_utilizador ILIKE '%' || id_utilizador_param || '%')
-        AND (ativa_param IS NULL OR (
-            (ativa_param = TRUE AND r.estado IN ('Requisitado', 'Atrasado') AND r.data_devolucao_real IS NULL)
-            OR (ativa_param = FALSE AND r.estado = 'Devolvido')
-        ))
+        AND (
+            (ativa_param IS NULL OR nao_mostrar_ativas_param IS NULL)
+            OR (ativa_param IS TRUE AND nao_mostrar_ativas_param IS FALSE 
+                AND r.estado IN ('Requisitado', 'Atrasado') 
+                AND r.data_devolucao_real IS NULL)
+            OR (ativa_param IS FALSE AND nao_mostrar_ativas_param IS TRUE 
+                AND r.estado = 'Devolvido' 
+                AND r.data_devolucao_real IS NOT NULL)
+            OR (ativa_param IS TRUE AND nao_mostrar_ativas_param IS TRUE)
+        )
     ORDER BY r.id_requisicao;
 END;
 $$;
-
 
 -- Função para o trigger que verifica exclusão de requisições
 CREATE OR REPLACE FUNCTION verificar_exclusao_requisicao()
