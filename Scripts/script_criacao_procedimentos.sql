@@ -709,3 +709,28 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION livros_disponiveis_por_livro(id_livro_param INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    stock_livro INTEGER;
+    total_requisicoes_ativas INTEGER;
+BEGIN
+    SELECT stock INTO stock_livro
+    FROM Livros
+    WHERE id_livro = id_livro_param;
+
+    IF stock_livro IS NULL THEN
+        RAISE EXCEPTION 'O livro com ID % não foi encontrado.', id_livro_param;
+    END IF;
+
+    SELECT COUNT(*) INTO total_requisicoes_ativas
+    FROM Requisicoes
+    WHERE id_livro = id_livro_param
+      AND estado IN ('Requisitado', 'Atrasado')
+      AND data_devolucao_real IS NULL;
+
+    RETURN stock_livro - total_requisicoes_ativas;
+END;
+$$;
