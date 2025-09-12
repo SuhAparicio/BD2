@@ -403,6 +403,46 @@ $$;
 /*        REQUISIÇÕES         */
 /******************************/
 
+CREATE OR REPLACE FUNCTION filtrar_requisicoes(
+    titulo_livro_param VARCHAR,
+    id_utilizador_param VARCHAR,
+    ativa_param BOOLEAN
+)
+RETURNS TABLE (
+    id_requisicao INTEGER,
+    titulo_livro VARCHAR,
+    id_utilizador VARCHAR,
+    data_requisicao DATE,
+    data_devolucao_prevista DATE,
+    data_devolucao_real DATE,
+    estado VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        r.id_requisicao,
+        l.titulo AS titulo_livro,
+        r.id_utilizador,
+        r.data_requisicao,
+        r.data_devolucao_prevista,
+        r.data_devolucao_real,
+        r.estado
+    FROM Requisicoes r
+    JOIN Livros l ON r.id_livro = l.id_livro
+    WHERE 
+        (titulo_livro_param IS NULL OR l.titulo ILIKE '%' || titulo_livro_param || '%')
+        AND (id_utilizador_param IS NULL OR r.id_utilizador ILIKE '%' || id_utilizador_param || '%')
+        AND (ativa_param IS NULL OR (
+            (ativa_param = TRUE AND r.estado IN ('Requisitado', 'Atrasado') AND r.data_devolucao_real IS NULL)
+            OR (ativa_param = FALSE AND r.estado = 'Devolvido')
+        ))
+    ORDER BY r.id_requisicao;
+END;
+$$;
+
+
 -- Função para o trigger que verifica exclusão de requisições
 CREATE OR REPLACE FUNCTION verificar_exclusao_requisicao()
 RETURNS TRIGGER
@@ -662,3 +702,4 @@ BEGIN
     ORDER BY l.id_livro;
 END;
 $$;
+
