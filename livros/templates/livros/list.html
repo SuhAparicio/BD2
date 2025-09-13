@@ -59,17 +59,33 @@
 
         .book-card {
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 18px 15px 15px 15px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
             text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 2px solid #eaeaea;
+            min-height: 220px;
         }
-
         .book-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #007BFF;
         }
-
+        .book-card-indisponivel {
+            border-color: #c62828 !important;
+            background: #ffeaea !important;
+            color: #c62828;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            50% { transform: translateX(2px); }
+            75% { transform: translateX(-2px); }
+            100% { transform: translateX(0); }
+        }
         .book-avatar {
             width: 100px;
             height: 100px;
@@ -88,21 +104,34 @@
             font-size: 14px;
         }
 
+        .book-stock {
+            margin: 4px 0 10px 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .book-stock-indisponivel {
+            color: #c62828;
+        }
+
         .book-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 18px;
+            margin-top: 10px;
         }
 
         .action-btn {
             text-decoration: none;
             color: #6c757d;
-            font-size: 16px;
-            transition: color 0.2s;
+            font-size: 18px;
+            transition: color 0.2s, transform 0.2s;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
-
         .action-btn:hover {
-            color: #0056b3;
+            color: #007BFF;
+            background: #f0f8ff;
+            transform: scale(1.15);
         }
 
         .item-list {
@@ -122,14 +151,49 @@
     {% if user.is_authenticated and not is_membro %}
         <a href="{% url 'livros:livro_create' %}" class="add-book">Adicionar Livro</a>
     {% endif %}
+    {% if livro_estrela_obj %}
+        <div class="book-card" style="margin: 0 auto 30px auto; max-width: 350px; position: relative; text-align: center;">
+            <img src="https://media.tenor.com/K3j9pwWlME0AAAAm/fire-flame.webp"
+                alt="Mais requisitado"
+                style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Livro Image" class="book-avatar">
+            <h2 class="book-title">{{ livro_estrela_obj.1 }}</h2>
+            <p class="book-author">Autor: {{ livro_estrela_obj.6 }}</p>
+            <p class="book-stock">Exemplares disponíveis: {{ livro_estrela_exemplares }}</p>
+            <p class="book-status" style="color: orange; font-weight: bold;">Mais requisitado do mês!</p>
+            <div class="book-actions">
+                <a href="{% url 'livros:livro_detail' livro_estrela_obj.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
+                {% if user.is_authenticated and not is_membro %}
+                    <a href="{% url 'livros:livro_update' livro_estrela_obj.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'livros:livro_delete' livro_estrela_obj.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    <!-- Filtros -->
+    <form method="get" class="d-flex align-items-center justify-content-center mb-4" style="gap: 15px;">
+        <input type="text" name="nome_livro" placeholder="Título do livro" value="{{ nome_livro }}" class="form-control" style="max-width: 200px;">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="mostrar_disponivel" id="mostrar_disponivel" {% if mostrar_disponivel %}checked{% endif %}>
+            <label class="form-check-label" for="mostrar_disponivel">Mostrar disponíveis</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="mostrar_indisponivel" id="mostrar_indisponivel" {% if mostrar_indisponivel %}checked{% endif %}>
+            <label class="form-check-label" for="mostrar_indisponivel">Mostrar indisponíveis</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'livros:livro_list' %}" class="btn btn-secondary">Reset</a>
+    </form>
     <div class="book-list-container">
         <ul class="book-list">
             {% for livro in livros %}
-            <li class="book-card">
+            <li class="book-card {% if livro.2 == 0 %}book-card-indisponivel{% endif %}" style="position: relative;">
                 <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Livro Image" class="book-avatar">
                 <h2 class="book-title">{{ livro.1 }}</h2>
-                <p class="book-author">Autor: {{ livro.6 }}</p>
-                <p class="book-stock">Stock: {{ livro.3 }}</p>
+                <p class="book-author">Autor: {{ livro.3 }}</p>
+                <p class="book-stock {% if livro.2 == 0 %}book-stock-indisponivel{% endif %}">
+                    Exemplares disponíveis: {{ livro.2 }}
+                </p>
                 <div class="book-actions">
                     <a href="{% url 'livros:livro_detail' livro.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
                     {% if user.is_authenticated and not is_membro %}
@@ -138,8 +202,6 @@
                     {% endif %}
                 </div>
             </li>
-            {% empty %}
-            <li class="item-list">Nenhum livro encontrado.</li>
             {% endfor %}
         </ul>
     </div>

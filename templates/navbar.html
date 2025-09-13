@@ -8,11 +8,11 @@
                 <a href="{% url 'autores:autor_list' %}" {% if request.path|slice:":9" == "/autores/" %}class="active"{% endif %}>Autores</a>
                 <a href="{% url 'categorias:categoria_list' %}" {% if request.path|slice:":12" == "/categorias/" %}class="active"{% endif %}>Categorias</a>
                 <a href="{% url 'editoras:editora_list' %}" {% if request.path|slice:":10" == "/editoras/" %}class="active"{% endif %}>Editoras</a>
-                <a href="{% url 'requisicoes:requisicao_list' %}" {% if request.path|slice:":13" == "/requisicoes/" %}class="active"{% endif %}>Requisições</a>
             {% endif %}
             {% if is_admin %}
                 <a href="{% url 'utilizadores:utilizador_list' %}" {% if request.path|slice:":14" == "/utilizadores/" %}class="active"{% endif %}>Utilizadores</a>
             {% endif %}
+            <a href="{% url 'requisicoes:requisicao_list' %}" {% if request.path|slice:":13" == "/requisicoes/" %}class="active"{% endif %}>Requisições</a>
             <a href="{% url 'livros:livro_list' %}" {% if request.path|slice:":8" == "/livros/" %}class="active"{% endif %}>Livros</a>
         {% endif %}
     </div>

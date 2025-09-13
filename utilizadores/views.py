@@ -1,18 +1,17 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from .mongo_utils import listar_utilizadores, inserir_utilizador, get_mongo_collection, atualizar_utilizador, obter_utilizador_por_id
 from django import forms
 from bson.objectid import ObjectId
 from .forms import UtilizadorCreateForm, UtilizadorUpdateForm
 
-def is_admin(user):
-    return user.is_superuser or user.groups.filter(name='admin').exists()
+from utilizadores.mongo_utils import is_admin
 
 @login_required
 def utilizador_list(request):
-    if not is_admin(request.user):
+    if not is_admin(request.user.id):
         return render(request, '404.html', status=404)
     utilizadores = listar_utilizadores()
     for u in utilizadores:
@@ -21,7 +20,7 @@ def utilizador_list(request):
 
 @login_required
 def utilizador_detail(request, pk):
-    if not is_admin(request.user):
+    if not is_admin(request.user.id):
         return render(request, '404.html', status=404)
     utilizador = obter_utilizador_por_id(pk)
     utilizador['id'] = str(utilizador['_id'])  # Adiciona campo 'id' para usar no template
@@ -33,7 +32,7 @@ def utilizador_detail(request, pk):
 
 @login_required
 def utilizador_create(request):
-    if not is_admin(request.user):
+    if not is_admin(request.user.id):
         return render(request, '404.html', status=404)
     if request.method == 'POST':
         form = UtilizadorCreateForm(request.POST)
@@ -49,10 +48,6 @@ def utilizador_create(request):
                 user = User.objects.create_user(username=username, password=password, is_superuser=True, is_staff=True)
             else:
                 user = User.objects.create_user(username=username, password=password, is_superuser=False, is_staff=True)
-            # Atribui ao grupo correto
-            group, _ = Group.objects.get_or_create(name=role)
-            user.groups.add(group)
-            user.save()
             # Guarda o utilizador no MongoDB com o id do user Django
             inserir_utilizador(
                 nome=form.cleaned_data['nome'],
@@ -69,7 +64,7 @@ def utilizador_create(request):
 
 @login_required
 def utilizador_update(request, pk):
-    if not is_admin(request.user):
+    if not is_admin(request.user.id):
         return render(request, '404.html', status=404)
     utilizador = obter_utilizador_por_id(pk)
     user = User.objects.get(id=utilizador['django_user_id'])
@@ -83,11 +78,6 @@ def utilizador_update(request, pk):
             # Atualiza superuser conforme a role
             role = form.cleaned_data['role']
             user.is_superuser = (role == 'admin')
-            # Remove de todos os grupos e adiciona ao novo grupo
-            user.groups.clear()
-            group, _ = Group.objects.get_or_create(name=role)
-            user.groups.add(group)
-            user.save()
             atualizar_utilizador(
                 pk,
                 {
@@ -111,7 +101,7 @@ def utilizador_update(request, pk):
 
 @login_required
 def utilizador_delete(request, pk):
-    if not is_admin(request.user):
+    if not is_admin(request.user.id):
         return render(request, '404.html', status=404)
     colecao = get_mongo_collection()
     utilizador = colecao.find_one({'_id': ObjectId(pk)})

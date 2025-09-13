@@ -15,12 +15,10 @@
             margin: 0;
             padding: 20px;
         }
-
         h1 {
             color: #333;
             text-align: center;
         }
-
         .add-user {
             display: block;
             text-align: center;
@@ -34,17 +32,14 @@
             font-weight: bold;
             transition: background-color 0.2s;
         }
-
         .add-user:hover {
             background-color: #0056b3;
         }
-
         .user-list-container {
             display: flex;
             justify-content: center;
             width: 100%;
         }
-
         .user-list {
             list-style: none;
             display: grid;
@@ -55,55 +50,89 @@
             padding: 0;
             margin: 0 auto;
         }
-
         .user-card {
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 18px 15px 15px 15px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
             text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 2px solid #eaeaea;
+            min-height: 180px;
         }
-
         .user-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #007BFF;
         }
-
+        .user-card-admin {
+            border-color: #ff9800 !important;
+            background: #fff3e0 !important;
+        }
+        .user-card-bibliotecario {
+            border-color: #1976d2 !important;
+            background: #e3f2fd !important;
+        }
+        .user-card-membro {
+            border-color: #388e3c !important;
+            background: #e8f5e9 !important;
+        }
         .user-image {
             width: 100px;
             height: 100px;
             margin-bottom: 10px;
+            border-radius: 50%;
+            object-fit: cover;
         }
-
         .user-title {
-            margin: 10px 0;
+            margin: 10px 0 5px 0;
             color: #444;
             font-size: 18px;
+            font-weight: bold;
         }
-
-        .user-number {
-            margin: 5px 0;
-            color: #666;
-            font-size: 14px;
+        .user-role {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            display: inline-block;
         }
-
+        .user-role-admin {
+            background: #ffe0b2;
+            color: #ff9800;
+            border: 1px solid #ffb74d;
+        }
+        .user-role-bibliotecario {
+            background: #bbdefb;
+            color: #1976d2;
+            border: 1px solid #90caf9;
+        }
+        .user-role-membro {
+            background: #c8e6c9;
+            color: #388e3c;
+            border: 1px solid #a5d6a7;
+        }
         .user-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 18px;
+            margin-top: 10px;
         }
-
         .action-btn {
             text-decoration: none;
             color: #6c757d;
-            font-size: 16px;
-            transition: color 0.2s;
+            font-size: 18px;
+            transition: color 0.2s, transform 0.2s;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
-
         .action-btn:hover {
-            color: #0056b3;
+            color: #007BFF;
+            background: #f0f8ff;
+            transform: scale(1.15);
         }
-
         .item-list {
             text-align: center;
             color: #666;
@@ -124,9 +153,12 @@
     <div class="user-list-container">
         <ul class="user-list">
             {% for utilizador in utilizadores %}
-            <li class="user-card">
+            <li class="user-card user-card-{{ utilizador.role }}">
                 <img src="https://cdn-icons-png.flaticon.com/256/5805/5805640.png" alt="Utilizador Image" class="user-image">
-                <h2 class="user-title">{{ utilizador.nome }} ({{ utilizador.django_user_id }})</h2>
+                <h2 class="user-title">{{ utilizador.nome }}</h2>
+                <span class="user-role user-role-{{ utilizador.role }}">
+                    {% if utilizador.role == "admin" %}Administrador{% elif utilizador.role == "bibliotecario" %}Bibliotecário{% else %}Membro{% endif %}
+                </span>
                 <div class="user-actions">
                     <a href="{% url 'utilizadores:utilizador_detail' utilizador.id %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
                     <a href="{% url 'utilizadores:utilizador_update' utilizador.id %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>

@@ -100,12 +100,11 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/602/602182.png" alt="Editoras">
                 <p>Editoras</p>
             </a>
-            <a href="{% url 'requisicoes:requisicao_list' %}" class="menu-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/2554/2554923.png" alt="Requisições">
-                <p>Requisições</p>
-            </a>
         {% endif %}
-
+        <a href="{% url 'requisicoes:requisicao_list' %}" class="menu-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/2554/2554923.png" alt="Requisições">
+            <p>Requisições</p>
+        </a>
         <a href="{% url 'livros:livro_list' %}" class="menu-item">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Book_icon_%28closed%29_-_Blue_and_gold.svg/1170px-Book_icon_%28closed%29_-_Blue_and_gold.svg.png" alt="Livros">
             <p>Livros</p>

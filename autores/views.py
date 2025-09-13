@@ -1,18 +1,30 @@
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import connections
 from django.contrib.auth.decorators import login_required
 import datetime
 from django.db import DatabaseError
 
+from utilizadores.mongo_utils import is_admin, is_bibliotecario
+
+def get_db_connection_for_user(user):
+    from utilizadores.mongo_utils import is_admin, is_bibliotecario, is_membro
+    if is_admin(user.id):
+        return connections['admin']
+    elif is_bibliotecario(user.id):
+        return connections['bibliotecario']
+    elif is_membro(user.id):
+        return connections['membro']
+    else:
+        return connections['default']
+
 def is_bibliotecario_ou_admin(user):
-    return (
-        user.is_superuser or
-        user.groups.filter(name='bibliotecario').exists() or
-        user.groups.filter(name='admin').exists()
-    )
+    return is_admin(user) or is_bibliotecario(user)
 
 @login_required
 def autor_list(request):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     try:
         with connection.cursor() as cursor:
@@ -25,8 +37,9 @@ def autor_list(request):
 
 @login_required
 def autor_detail(request, pk):
-    if not is_bibliotecario_ou_admin(request.user):
+    if not is_bibliotecario_ou_admin(request.user.id):
         return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     with connection.cursor() as cursor:
         cursor.execute("SELECT id_autor, nome, data_nascimento, nacionalidade FROM Autores WHERE id_autor = %s;", [pk])
         autor = cursor.fetchone()
@@ -34,6 +47,9 @@ def autor_detail(request, pk):
 
 @login_required
 def autor_create(request):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     if request.method == 'POST':
         nome = request.POST.get('nome')
@@ -49,6 +65,9 @@ def autor_create(request):
 
 @login_required
 def autor_update(request, pk):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     with connection.cursor() as cursor:
         cursor.execute("SELECT id_autor, nome, data_nascimento, nacionalidade FROM Autores WHERE id_autor = %s;", [pk])
@@ -80,6 +99,9 @@ def autor_update(request, pk):
 
 @login_required
 def autor_delete(request, pk):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     with connection.cursor() as cursor:
         cursor.execute("SELECT id_autor, nome FROM Autores WHERE id_autor = %s;", [pk])

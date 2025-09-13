@@ -135,7 +135,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+# .env    #Retirado para contexto de projeto da cadeira
 .envrc
 .venv
 env/

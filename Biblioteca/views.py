@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from utilizadores.forms import SignupForm
 from utilizadores.mongo_utils import inserir_utilizador
 from django.contrib.auth.decorators import login_required
@@ -16,9 +16,6 @@ def signup(request):
                 username=form.cleaned_data['username'],
                 password=form.cleaned_data['password']
             )
-            group, _ = Group.objects.get_or_create(name='membro')
-            user.groups.add(group)
-            user.save()
             inserir_utilizador(
                 nome=form.cleaned_data['nome'],
                 contacto=form.cleaned_data['contacto'],

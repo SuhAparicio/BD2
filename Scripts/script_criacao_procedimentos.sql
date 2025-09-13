@@ -648,26 +648,22 @@ EXECUTE FUNCTION verificar_stock_requisicao();
 /******************************/
 
 CREATE OR REPLACE FUNCTION livro_mais_requisitado()
-RETURNS TABLE (
-    id_livro INTEGER,
-    titulo VARCHAR,
-    total_requisicoes BIGINT
-)
+RETURNS INTEGER
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    id_livro_result INTEGER;
 BEGIN
-    RETURN QUERY
-    SELECT 
-        r.id_livro,
-        l.titulo,
-        COUNT(*) AS total_requisicoes
+    SELECT r.id_livro
+    INTO id_livro_result
     FROM Requisicoes r
-    INNER JOIN Livros l ON r.id_livro = l.id_livro
     WHERE r.data_requisicao >= CURRENT_DATE - INTERVAL '30 days'
       AND r.data_requisicao <= CURRENT_DATE
-    GROUP BY r.id_livro, l.titulo
-    ORDER BY total_requisicoes DESC, r.id_livro ASC
+    GROUP BY r.id_livro
+    ORDER BY COUNT(*) DESC, r.id_livro ASC
     LIMIT 1;
+
+    RETURN id_livro_result;
 END;
 $$;
 
@@ -732,5 +728,63 @@ BEGIN
       AND data_devolucao_real IS NULL;
 
     RETURN stock_livro - total_requisicoes_ativas;
+END;
+$$;
+
+/******************************/
+/* FILTRAR LIVROS POR DISPONIBILIDADE */
+/******************************/
+
+CREATE OR REPLACE FUNCTION filtrar_livros(
+    nome_livro_param VARCHAR,
+    disponivel_param BOOLEAN,
+    nao_disponivel_param BOOLEAN
+)
+RETURNS TABLE (
+    id_livro INTEGER,
+    titulo VARCHAR,
+    stock_disponivel INTEGER,
+    nome_autor VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        l.id_livro,
+        l.titulo,
+        CAST(l.stock - COALESCE((
+            SELECT COUNT(*) 
+            FROM Requisicoes r 
+            WHERE r.id_livro = l.id_livro 
+            AND r.estado IN ('Requisitado', 'Atrasado')
+            AND r.data_devolucao_real IS NULL
+        ), 0) AS INTEGER) AS stock_disponivel,
+        COALESCE(a.nome, 'Sem autor') AS nome_autor
+    FROM Livros l
+    LEFT JOIN Autores a ON l.id_autor = a.id_autor
+    WHERE 
+        (nome_livro_param IS NULL OR l.titulo ILIKE '%' || nome_livro_param || '%')
+        AND (
+            (disponivel_param IS NULL OR nao_disponivel_param IS NULL)
+            OR (disponivel_param IS TRUE AND nao_disponivel_param IS FALSE 
+                AND (l.stock - COALESCE((
+                    SELECT COUNT(*) 
+                    FROM Requisicoes r 
+                    WHERE r.id_livro = l.id_livro 
+                    AND r.estado IN ('Requisitado', 'Atrasado')
+                    AND r.data_devolucao_real IS NULL
+                ), 0) > 0))
+            OR (disponivel_param IS FALSE AND nao_disponivel_param IS TRUE 
+                AND (l.stock - COALESCE((
+                    SELECT COUNT(*) 
+                    FROM Requisicoes r 
+                    WHERE r.id_livro = l.id_livro 
+                    AND r.estado IN ('Requisitado', 'Atrasado')
+                    AND r.data_devolucao_real IS NULL
+                ), 0) = 0))
+            OR (disponivel_param IS TRUE AND nao_disponivel_param IS TRUE)
+        )
+    ORDER BY l.id_livro;
 END;
 $$;

@@ -58,84 +58,148 @@
 
         .loan-card {
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 18px 15px 15px 15px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
             text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 2px solid #eaeaea;
+            min-height: 220px;
         }
-
         .loan-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #007BFF;
         }
-
-        .loan-image {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 10px;
-        }
-
         .loan-title {
-            margin: 10px 0;
-            color: #444;
-            font-size: 18px;
+            margin: 12px 0 6px 0;
+            color: #222;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
-
         .loan-user {
-            margin: 5px 0;
-            color: #666;
+            margin: 4px 0;
+            color: #555;
+            font-size: 15px;
+            font-style: italic;
+        }
+        .loan-date {
+            margin: 4px 0;
+            color: #888;
             font-size: 14px;
         }
-
+        .loan-status {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .loan-status-requisitado {
+            background: #eafbe7;
+            color: #2e7d32;
+            border: 1px solid #b2dfdb;
+        }
+        .loan-status-devolvido {
+            background: #f2f2f2;
+            color: #555;
+            border: 1px solid #d6d6d6;
+        }
+        .loan-status-atrasado {
+            background: #ffeaea;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            50% { transform: translateX(2px); }
+            75% { transform: translateX(-2px); }
+            100% { transform: translateX(0); }
+        }
         .loan-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 18px;
+            margin-top: 10px;
         }
-
         .action-btn {
             text-decoration: none;
             color: #6c757d;
-            font-size: 16px;
-            transition: color 0.2s;
+            font-size: 18px;
+            transition: color 0.2s, transform 0.2s;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
-
         .action-btn:hover {
-            color: #0056b3;
-        }
-
-        .item-list {
-            text-align: center;
-            color: #666;
+            color: #007BFF;
+            background: #f0f8ff;
+            transform: scale(1.15);
         }
     </style>
 </head>
 <body>
     {% include "navbar.html" %}
     <h1>Lista de Requisicões</h1>
-    <a href="{% url 'requisicoes:requisicao_create' %}" class="add-loan">Adicionar Requisicão</a>
+    {% if not is_membro %}
+        <a href="{% url 'requisicoes:requisicao_create' %}" class="add-loan">Adicionar Requisicão</a>
+    {% endif %}
+    <form method="get" class="d-flex align-items-center justify-content-center mb-4" style="gap: 15px;">
+        <input type="text" name="titulo_livro" placeholder="Nome do livro" value="{{ titulo_livro }}" class="form-control" style="max-width: 200px;">
+        {% if not is_membro %}
+            <select name="id_utilizador" class="form-select" style="max-width: 200px;">
+                <option value="">Todos os utilizadores</option>
+                {% for id, nome in opcoes_utilizador %}
+                    <option value="{{ id }}" {% if id_utilizador == id %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="ativa" id="ativa" {% if ativa %}checked{% endif %}>
+            <label class="form-check-label" for="ativa">Mostrar ativas</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="mostrar_inativas" id="mostrar_inativas" {% if mostrar_inativas %}checked{% endif %}>
+            <label class="form-check-label" for="mostrar_inativas">Mostrar inativas</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'requisicoes:requisicao_list' %}" class="btn btn-secondary">Reset</a>
+    </form>
     <div class="loan-list-container">
         <ul class="loan-list">
             {% for req in requisicoes %}
             <li class="loan-card">
-                <h2 class="loan-title">{{ req.2 }}</h2>
-                <p class="loan-user">Utilizador: {{ req.8 }}</p>
-                <p class="loan-date">Data de requisição: {{ req.4 }}</p>
-                <p class="loan-date">Data prevista: {{ req.5 }}</p>
-                <p class="loan-status">Estado: {{ req.7 }}</p>
+                <h2 class="loan-title">{{ req.1 }}</h2>
+                <p class="loan-user">Utilizador: {{ req.7 }}</p>
+                <p class="loan-date">Data de requisição: {{ req.3 }}</p>
+                <p class="loan-date">Data prevista: {{ req.4 }}</p>
+                {% if req.6 == "Requisitado" %}
+                    <span class="loan-status loan-status-requisitado">Requisitado</span>
+                {% elif req.6 == "Devolvido" %}
+                    <span class="loan-status loan-status-devolvido">Devolvido</span>
+                {% elif req.6 == "Atrasado" %}
+                    <span class="loan-status loan-status-atrasado">Atrasado</span>
+                {% else %}
+                    <span class="loan-status">{{ req.6 }}</span>
+                {% endif %}
+                {% if not is_membro %}
                 <div class="loan-actions">
                     <a href="{% url 'requisicoes:requisicao_detail' req.0 %}" class="action-btn" title="Detalhes"><i class="fas fa-eye"></i></a>
-                    {% if req.7 != "Devolvido" %}
+                    {% if req.6 != "Devolvido" %}
                         <a href="{% url 'requisicoes:requisicao_update' req.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
                         <a href="{% url 'requisicoes:requisicao_devolver' req.0 %}" class="action-btn" title="Devolver"><i class="fas fa-undo"></i></a>
                     {% endif %}
                     <a href="{% url 'requisicoes:requisicao_delete' req.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
                 </div>
+                {% endif %}
             </li>
             {% empty %}
             <li class="item-list">Nenhuma requisição encontrada.</li>
             {% endfor %}
-        </ul>
         </ul>
     </div>
 </body>

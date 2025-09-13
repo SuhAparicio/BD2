@@ -15,12 +15,10 @@
             margin: 0;
             padding: 20px;
         }
-
         h1 {
             color: #333;
             text-align: center;
         }
-
         .add-category {
             display: block;
             text-align: center;
@@ -34,17 +32,14 @@
             font-weight: bold;
             transition: background-color 0.2s;
         }
-
         .add-category:hover {
             background-color: #0056b3;
         }
-
         .category-list-container {
             display: flex;
             justify-content: center;
             width: 100%;
         }
-
         .category-list {
             list-style: none;
             display: grid;
@@ -55,49 +50,51 @@
             padding: 0;
             margin: 0 auto;
         }
-
         .category-card {
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 18px 15px 15px 15px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
             text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 2px solid #eaeaea;
+            min-height: 220px;
         }
-
         .category-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #007BFF;
         }
-
         .category-avatar {
             width: 100px;
             height: 100px;
             margin-bottom: 10px;
         }
-
         .category-name {
             margin: 10px 0;
             color: #444;
             font-size: 18px;
         }
-
         .category-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 18px;
+            margin-top: 10px;
         }
-
         .action-btn {
             text-decoration: none;
             color: #6c757d;
-            font-size: 16px;
-            transition: color 0.2s;
+            font-size: 18px;
+            transition: color 0.2s, transform 0.2s;
+            padding: 6px 10px;
+            border-radius: 6px;
         }
-
         .action-btn:hover {
-            color: #0056b3;
+            color: #007BFF;
+            background: #f0f8ff;
+            transform: scale(1.15);
         }
-
         .item-list {
             text-align: center;
             color: #666;

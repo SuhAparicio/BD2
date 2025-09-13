@@ -28,6 +28,10 @@ def obter_utilizador_por_id(pk):
     colecao = get_mongo_collection()
     return colecao.find_one({'_id': ObjectId(pk)})
 
+def get_userid_by_django_id(django_user_id):
+    user = get_user_by_django_id(django_user_id)
+    return str(user['_id']) if user else None
+
 def atualizar_utilizador(pk, dados):
     colecao = get_mongo_collection()
     colecao.update_one({'_id': ObjectId(pk)}, {'$set': dados})

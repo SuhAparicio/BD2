@@ -1,16 +1,28 @@
-from django.db import connection, DatabaseError
+from django.db import connections, DatabaseError
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
+from utilizadores.mongo_utils import is_admin, is_bibliotecario
+
 def is_bibliotecario_ou_admin(user):
-    return (
-        user.is_superuser or
-        user.groups.filter(name='bibliotecario').exists() or
-        user.groups.filter(name='admin').exists()
-    )
+    return is_admin(user) or is_bibliotecario(user)
+
+def get_db_connection_for_user(user):
+    from utilizadores.mongo_utils import is_admin, is_bibliotecario, is_membro
+    if is_admin(user.id):
+        return connections['admin']
+    elif is_bibliotecario(user.id):
+        return connections['bibliotecario']
+    elif is_membro(user.id):
+        return connections['membro']
+    else:
+        return connections['default']
 
 @login_required
 def categoria_list(request):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     try:
         with connection.cursor() as cursor:
@@ -23,6 +35,9 @@ def categoria_list(request):
 
 @login_required
 def categoria_detail(request, id_categoria):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     categoria = None
     try:
@@ -35,6 +50,9 @@ def categoria_detail(request, id_categoria):
 
 @login_required
 def categoria_create(request):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     if request.method == 'POST':
         nome = request.POST.get('nome')
@@ -49,6 +67,9 @@ def categoria_create(request):
 
 @login_required
 def categoria_update(request, id_categoria):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     if request.method == 'POST':
         nome = request.POST.get('nome')
@@ -79,6 +100,9 @@ def categoria_update(request, id_categoria):
 
 @login_required
 def categoria_delete(request, id_categoria):
+    if not is_bibliotecario_ou_admin(request.user.id):
+        return render(request, '404.html', status=404)
+    connection = get_db_connection_for_user(request.user)
     error = None
     if request.method == 'POST':
         try:

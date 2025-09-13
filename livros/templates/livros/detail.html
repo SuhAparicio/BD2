@@ -79,6 +79,7 @@
             <p><strong>ISBN:</strong> {{ livro.2 }}</p>
             <p><strong>Stock:</strong> {{ livro.3 }}</p>
             <p><strong>Ano de Publicação:</strong> {{ livro.4|default:"N/A" }}</p>
+            <p><strong>Exemplares disponíveis:</strong> {{ exemplares_disponiveis }}</p>
         </div>
         <a href="{% url 'livros:livro_list' %}">Voltar</a>
     </div>

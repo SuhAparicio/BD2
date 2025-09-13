@@ -95,11 +95,13 @@
         <p><strong>Estado:</strong> {{ req.6 }}</p>
         <div class="loan-actions">
             <a href="{% url 'requisicoes:requisicao_list' %}" class="action-btn" title="Voltar à lista"><i class="fas fa-arrow-left"></i></a>
-            {% if req.6 != "Devolvido" %}
-                <a href="{% url 'requisicoes:requisicao_update' req.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
-                <a href="{% url 'requisicoes:requisicao_devolver' req.0 %}" class="action-btn" title="Devolver"><i class="fas fa-undo"></i></a>
+            {% if not is_membro %}
+                {% if req.6 != "Devolvido" %}
+                    <a href="{% url 'requisicoes:requisicao_update' req.0 %}" class="action-btn" title="Editar"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'requisicoes:requisicao_devolver' req.0 %}" class="action-btn" title="Devolver"><i class="fas fa-undo"></i></a>
+                {% endif %}
+                <a href="{% url 'requisicoes:requisicao_delete' req.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
             {% endif %}
-            <a href="{% url 'requisicoes:requisicao_delete' req.0 %}" class="action-btn" title="Apagar"><i class="fas fa-trash"></i></a>
         </div>
     </div>
 </body>

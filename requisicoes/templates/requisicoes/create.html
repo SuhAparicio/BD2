@@ -110,7 +110,9 @@
             <select name="id_livro" required>
                 <option value="">-----------</option>
                 {% for livro in livros %}
-                    <option value="{{ livro.0 }}">{{ livro.1 }}</option>
+                    <option value="{{ livro.0 }}" {% if req and req.1 == livro.0 %}selected{% endif %}>
+                        {{ livro.1 }} (Disponíveis: {{ livro.3 }})
+                    </option>
                 {% endfor %}
             </select><br>
             <label for="id_utilizador">Utilizador:</label>

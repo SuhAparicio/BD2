@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -80,15 +84,55 @@ WSGI_APPLICATION = 'Biblioteca.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DB_NAME = os.getenv('DB_NAME')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+
+DB_ADMIN_USER = os.getenv('DB_ADMIN_USER')
+DB_ADMIN_PASSWORD = os.getenv('DB_ADMIN_PASSWORD')
+
+DB_BIBLIOTECARIO_USER = os.getenv('DB_BIBLIOTECARIO_USER')
+DB_BIBLIOTECARIO_PASSWORD = os.getenv('DB_BIBLIOTECARIO_PASSWORD')
+
+DB_MEMBRO_USER = os.getenv('DB_MEMBRO_USER')
+DB_MEMBRO_PASSWORD = os.getenv('DB_MEMBRO_PASSWORD')
+
+DB_DEFAULT_USER = os.getenv('DB_DEFAULT_USER')
+DB_DEFAULT_PASSWORD = os.getenv('DB_DEFAULT_PASSWORD')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Projeto',  # Nome da BD criada no HeidiSQL
-        'USER': 'postgres',
-        'PASSWORD': 'SuhAparicio25!',  # Substitui pela tua senha
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+        'NAME': DB_NAME,
+        'USER': DB_DEFAULT_USER,
+        'PASSWORD': DB_DEFAULT_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    },
+    'admin': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_ADMIN_USER,
+        'PASSWORD': DB_ADMIN_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    },
+    'bibliotecario': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_BIBLIOTECARIO_USER,
+        'PASSWORD': DB_BIBLIOTECARIO_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    },
+    'membro': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_MEMBRO_USER,
+        'PASSWORD': DB_MEMBRO_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    },
 }
 
 # Password validation
